@@ -2,20 +2,31 @@
 
 import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
-import { PageHeader, StatCard } from "@/components/shared";
+import { useState, useMemo } from "react";
+import { motion } from "framer-motion";
+import { toast } from "sonner";
+import { PageHeader, StatCard, SubmitButton, FormField } from "@/components/shared";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { cn, getStatusColor, getStatusLabel } from "@/lib/utils";
 import { Users, UserCheck, UserMinus, UserX } from "lucide-react";
+import { setKehadiran } from "@/actions/kehadiran";
 
 const MONTHS = [
   "Januari", "Februari", "Maret", "April", "Mei", "Juni", 
   "Juli", "Agustus", "September", "Oktober", "November", "Desember"
 ];
 
-export default function DaftarHadirClient({ initialData, santris }: { initialData: any[], santris: any[] }) {
+export default function DaftarHadirClient({ initialData, santris, hafalans }: { initialData: any[], santris: any[], hafalans: any[] }) {
   const [selectedMonth, setSelectedMonth] = useState((new Date().getMonth() + 1).toString());
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear().toString());
+
+  // Dialog State
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedCell, setSelectedCell] = useState<{ santriId: string, santriNama: string, day: number, status: string } | null>(null);
+  const [formStatus, setFormStatus] = useState("hadir");
 
   const daysInMonth = new Date(parseInt(selectedYear), parseInt(selectedMonth), 0).getDate();
   const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
@@ -25,36 +36,76 @@ export default function DaftarHadirClient({ initialData, santris }: { initialDat
     const data: Record<string, Record<string, string>> = {};
     santris.forEach(s => { data[s.id] = {}; });
     
+    // 1. Manually set kehadiran
     initialData.forEach(k => {
       const date = new Date(k.tanggal);
       if (date.getMonth() + 1 === parseInt(selectedMonth) && date.getFullYear() === parseInt(selectedYear)) {
-        data[k.santriId][date.getDate()] = k.status;
+        if (data[k.santriId]) {
+          data[k.santriId][date.getDate()] = k.status;
+        }
       }
     });
+
+    // 2. Infer from hafalans (overwrites if there is a manual record, or fills empty)
+    hafalans?.forEach(h => {
+      const date = new Date(h.tanggal);
+      if (date.getMonth() + 1 === parseInt(selectedMonth) && date.getFullYear() === parseInt(selectedYear)) {
+        if (data[h.santriId]) {
+          data[h.santriId][date.getDate()] = "hadir";
+        }
+      }
+    });
+
     return data;
-  }, [initialData, selectedMonth, selectedYear, santris]);
+  }, [initialData, selectedMonth, selectedYear, santris, hafalans]);
 
   const stats = useMemo(() => {
-    let hadir = 0, izin = 0, sakit = 0, alpha = 0;
-    initialData.forEach(k => {
-      if (k.status === "hadir") hadir++;
-      if (k.status === "izin") izin++;
-      if (k.status === "sakit") sakit++;
-      if (k.status === "alpha") alpha++;
+    let hadir = 0, izin = 0, sakit = 0, udzur = 0, alpha = 0;
+    Object.values(matrix).forEach(records => {
+      Object.values(records).forEach(status => {
+        if (status === "hadir") hadir++;
+        else if (status === "izin") izin++;
+        else if (status === "sakit") sakit++;
+        else if (status === "udzur") udzur++;
+        else if (status === "alpha") alpha++;
+      });
     });
-    return { hadir, izin, sakit, alpha };
-  }, [initialData]);
+    return { hadir, izin, sakit, udzur, alpha };
+  }, [matrix]);
+
+  const handleCellClick = (santriId: string, santriNama: string, day: number, status: string) => {
+    // If it's inferred as hadir from hafalan, maybe we shouldn't allow changing it to alpha
+    // But we let them override it anyway, the backend will just save the Kehadiran.
+    setSelectedCell({ santriId, santriNama, day, status: status || "hadir" });
+    setFormStatus(status || "hadir");
+    setIsDialogOpen(true);
+  };
+
+  const handleSaveKehadiran = async () => {
+    if (!selectedCell) return;
+    setIsSubmitting(true);
+    try {
+      const date = new Date(parseInt(selectedYear), parseInt(selectedMonth) - 1, selectedCell.day);
+      await setKehadiran(selectedCell.santriId, date, formStatus);
+      toast.success("Kehadiran berhasil disimpan");
+      setIsDialogOpen(false);
+    } catch (error) {
+      toast.error("Gagal menyimpan kehadiran");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
       <PageHeader 
         title="Daftar Hadir" 
-        subtitle="Rekap kehadiran santri bulanan"
+        subtitle="Rekap kehadiran santri bulanan. Santri yang menyetor hafalan otomatis tercatat Hadir."
       />
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard title="Total Hadir" value={stats.hadir} icon={UserCheck} color="success" />
-        <StatCard title="Total Izin" value={stats.izin} icon={Users} color="warning" />
+        <StatCard title="Total Izin/Udzur" value={stats.izin + stats.udzur} icon={Users} color="warning" />
         <StatCard title="Total Sakit" value={stats.sakit} icon={UserMinus} color="info" />
         <StatCard title="Total Alpha" value={stats.alpha} icon={UserX} color="danger" />
       </div>
@@ -118,16 +169,20 @@ export default function DaftarHadirClient({ initialData, santris }: { initialDat
                       if (status === "hadir") hadirCount++;
                       
                       return (
-                        <td key={day} className="px-1 py-3 border-r border-gray-100 last:border-r-0">
+                        <td 
+                          key={day} 
+                          className="px-1 py-3 border-r border-gray-100 last:border-r-0 cursor-pointer hover:bg-gray-100 transition-colors"
+                          onClick={() => handleCellClick(santri.id, santri.nama, day, status)}
+                        >
                           {status ? (
                             <TooltipProvider delayDuration={200}>
                               <Tooltip>
                                 <TooltipTrigger asChild>
                                   <div className={cn(
-                                    "w-6 h-6 mx-auto rounded-full flex items-center justify-center text-[10px] font-bold text-white shadow-sm cursor-help",
+                                    "w-6 h-6 mx-auto rounded-full flex items-center justify-center text-[10px] font-bold text-white shadow-sm",
                                     getStatusColor(status)
                                   )}>
-                                    {status === "hadir" ? "✓" : status === "izin" ? "I" : status === "sakit" ? "S" : "✗"}
+                                    {status === "hadir" ? "✓" : status === "izin" ? "I" : status === "sakit" ? "S" : status === "udzur" ? "U" : "✗"}
                                   </div>
                                 </TooltipTrigger>
                                 <TooltipContent>
@@ -136,7 +191,7 @@ export default function DaftarHadirClient({ initialData, santris }: { initialDat
                               </Tooltip>
                             </TooltipProvider>
                           ) : (
-                            <div className="w-6 h-6 mx-auto rounded-full bg-gray-50 border border-gray-100"></div>
+                            <div className="w-6 h-6 mx-auto rounded-full bg-gray-50 border border-gray-100 hover:border-gray-300"></div>
                           )}
                         </td>
                       );
@@ -161,6 +216,10 @@ export default function DaftarHadirClient({ initialData, santris }: { initialDat
             <span className="font-medium text-muted-foreground">Izin (I)</span>
           </div>
           <div className="flex items-center gap-2">
+            <div className="w-4 h-4 rounded-full bg-purple-400"></div>
+            <span className="font-medium text-muted-foreground">Udzur (U)</span>
+          </div>
+          <div className="flex items-center gap-2">
             <div className="w-4 h-4 rounded-full bg-blue-400"></div>
             <span className="font-medium text-muted-foreground">Sakit (S)</span>
           </div>
@@ -170,6 +229,39 @@ export default function DaftarHadirClient({ initialData, santris }: { initialDat
           </div>
         </div>
       </div>
+
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Input Kehadiran Manual</DialogTitle>
+            <DialogDescription>
+              {selectedCell?.santriNama} — {selectedCell?.day} {MONTHS[parseInt(selectedMonth) - 1]} {selectedYear}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4 space-y-4">
+            <FormField label="Status Kehadiran">
+              <Select value={formStatus} onValueChange={setFormStatus}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Pilih status..." />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="hadir">Hadir</SelectItem>
+                  <SelectItem value="izin">Izin</SelectItem>
+                  <SelectItem value="sakit">Sakit</SelectItem>
+                  <SelectItem value="udzur">Udzur</SelectItem>
+                  <SelectItem value="alpha">Alpha</SelectItem>
+                </SelectContent>
+              </Select>
+            </FormField>
+          </div>
+          <DialogFooter>
+            <SubmitButton isLoading={isSubmitting} onClick={handleSaveKehadiran}>
+              Simpan Kehadiran
+            </SubmitButton>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
     </motion.div>
   );
 }

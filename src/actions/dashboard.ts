@@ -39,8 +39,28 @@ export async function getDashboardStats() {
     },
   });
   
-  const hadirCount = kehadirans.filter(k => k.status.toLowerCase() === "hadir").length;
-  const kehadiranPercent = kehadirans.length > 0 ? Math.round((hadirCount / kehadirans.length) * 100) : 0;
+  // A santri is present if they have a 'hadir' status in Kehadirans OR they have a hafalan today.
+  const hadirSet = new Set<string>();
+  
+  kehadirans.forEach(k => {
+    if (k.status.toLowerCase() === "hadir") {
+      hadirSet.add(k.santriId);
+    }
+  });
+
+  const hafalansToday = await prisma.hafalan.findMany({
+    where: {
+      createdAt: {
+        gte: today,
+      },
+    },
+  });
+
+  hafalansToday.forEach(h => {
+    hadirSet.add(h.santriId);
+  });
+
+  const kehadiranPercent = totalSantri > 0 ? Math.round((hadirSet.size / totalSantri) * 100) : 0;
 
   const recentActivities = await prisma.hafalan.findMany({
     take: 5,

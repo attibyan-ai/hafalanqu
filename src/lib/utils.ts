@@ -67,6 +67,7 @@ export function getStatusColor(status: string): string {
     hadir: "bg-emerald-500",
     izin: "bg-amber-400",
     sakit: "bg-blue-400",
+    udzur: "bg-purple-400",
     alpha: "bg-red-500",
   };
   return colors[status] || "bg-gray-400";
@@ -77,6 +78,7 @@ export function getStatusLabel(status: string): string {
     hadir: "Hadir",
     izin: "Izin",
     sakit: "Sakit",
+    udzur: "Udzur",
     alpha: "Alpha",
   };
   return labels[status] || status;
