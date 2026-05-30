@@ -3,13 +3,12 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "mongodb"
   url      = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
 }
 
 model User {
-  id        String   @id @default(cuid())
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
   nama      String
   email     String   @unique
   password  String
@@ -20,7 +19,7 @@ model User {
 }
 
 model Santri {
-  id        String   @id @default(cuid())
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
   nama      String
   nis       String   @unique
   kelas     String
@@ -29,14 +28,14 @@ model Santri {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  hafalans  Hafalan[]
+  hafalans   Hafalan[]
   kehadirans Kehadiran[]
-  tes       Tes[]
+  tes        Tes[]
 }
 
 model Hafalan {
-  id        String   @id @default(cuid())
-  santriId  String
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  santriId  String   @db.ObjectId
   santri    Santri   @relation(fields: [santriId], references: [id], onDelete: Cascade)
   tanggal   DateTime
   jenis     String   // ziyadah, murajaah
@@ -50,8 +49,8 @@ model Hafalan {
 }
 
 model Kehadiran {
-  id        String   @id @default(cuid())
-  santriId  String
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  santriId  String   @db.ObjectId
   santri    Santri   @relation(fields: [santriId], references: [id], onDelete: Cascade)
   tanggal   DateTime
   status    String   // hadir, sakit, izin, alfa
@@ -61,8 +60,8 @@ model Kehadiran {
 }
 
 model Tes {
-  id        String   @id @default(cuid())
-  santriId  String
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  santriId  String   @db.ObjectId
   santri    Santri   @relation(fields: [santriId], references: [id], onDelete: Cascade)
   tanggal   DateTime
   jenis     String   // juz, surah
