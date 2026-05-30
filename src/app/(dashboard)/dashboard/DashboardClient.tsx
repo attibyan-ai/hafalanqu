@@ -30,7 +30,7 @@ interface DashboardClientProps {
     topSantri: Array<{
       id: string;
       nama: string;
-      juz: number;
+      ayat: number;
       skor: number;
       rank: number;
     }>;
@@ -169,7 +169,7 @@ export default function DashboardClient({ stats }: DashboardClientProps) {
         </motion.div>
 
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }} className="card p-6">
-          <h3 className="font-bold text-xl mb-6">Peringkat Santri (Juz Terbanyak)</h3>
+          <h3 className="font-bold text-xl mb-6">Peringkat Santri (Hafalan Terbanyak)</h3>
           <div className="space-y-4">
             {stats.topSantri.length === 0 ? (
               <p className="text-sm text-muted-foreground text-center py-4">Belum ada data santri.</p>
@@ -186,7 +186,7 @@ export default function DashboardClient({ stats }: DashboardClientProps) {
                     </div>
                     <div>
                       <p className="font-semibold text-dark">{santri.nama}</p>
-                      <p className="text-sm text-muted-foreground">{santri.juz} Juz Selesai</p>
+                      <p className="text-sm text-muted-foreground">{santri.ayat} Ayat Terhafal</p>
                     </div>
                   </div>
                   <Badge variant="success" className="px-3 py-1 text-sm font-bold shadow-sm">{santri.skor}</Badge>

@@ -61,12 +61,21 @@ export async function getDashboardStats() {
 
   const topSantri = santris
     .map(s => {
-      // Simplification: assume 1 juz = ~20 pages or similar. Just using target for now.
+      // Calculate total ayat memorized
+      const totalAyat = s.hafalans.reduce((sum, h) => {
+        // Calculate ayat diff: (ayatAkhir - ayatMulai) + 1
+        const ayatCount = Math.max(0, h.ayatAkhir - h.ayatMulai + 1);
+        return sum + ayatCount;
+      }, 0);
+
+      // Score can be based on total ayat * 10 or similar
+      const skor = totalAyat * 10;
+
       return {
         id: s.id,
         nama: s.nama,
-        juz: s.target,
-        skor: s.hafalans.length * 10,
+        ayat: totalAyat,
+        skor: skor,
       };
     })
     .sort((a, b) => b.skor - a.skor)
