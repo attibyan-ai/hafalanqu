@@ -1,0 +1,162 @@
+"use client";
+
+import { motion } from "framer-motion";
+import { Users, BookOpen, BarChart3, CalendarCheck } from "lucide-react";
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from "recharts";
+import { StatCard, ChartCard } from "@/components/shared";
+import { dashboardStats, hafalanChartData, kualitasChartData, recentActivities, topSantri } from "@/constants/mock-data";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { getInitials, formatDateShort } from "@/lib/utils";
+
+export default function DashboardPage() {
+  const container = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: { staggerChildren: 0.1 }
+    }
+  };
+
+  return (
+    <div className="space-y-8">
+      <div className="flex flex-col gap-2">
+        <motion.h1 
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-3xl font-bold tracking-tight"
+        >
+          Assalamu'alaikum, Ustadz Ahmad 👋
+        </motion.h1>
+        <motion.p 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.1 }}
+          className="text-muted-foreground"
+        >
+          {formatDateShort(new Date().toISOString())} — Berikut ringkasan aktivitas hari ini.
+        </motion.p>
+      </div>
+
+      <motion.div 
+        variants={container}
+        initial="hidden"
+        animate="show"
+        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"
+      >
+        <StatCard title="Total Santri" value={dashboardStats.totalSantri} trend={dashboardStats.trendSantri} icon={Users} color="primary" />
+        <StatCard title="Setoran Hari Ini" value={dashboardStats.setoranHariIni} trend={dashboardStats.trendSetoran} icon={BookOpen} color="info" />
+        <StatCard title="Rata-rata Kualitas" value={`${dashboardStats.rataKualitas}%`} trend={dashboardStats.trendKualitas} icon={BarChart3} color="success" />
+        <StatCard title="Kehadiran" value={`${dashboardStats.kehadiran}%`} trend={dashboardStats.trendKehadiran} icon={CalendarCheck} color="warning" />
+      </motion.div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
+          <ChartCard title="Tren Hafalan Mingguan" showPeriodSelector>
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={hafalanChartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="colorZiyadah" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#0F7B53" stopOpacity={0.3}/>
+                    <stop offset="95%" stopColor="#0F7B53" stopOpacity={0}/>
+                  </linearGradient>
+                  <linearGradient id="colorMurajaah" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.3}/>
+                    <stop offset="95%" stopColor="#3B82F6" stopOpacity={0}/>
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5E7EB" />
+                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#6B7280', fontSize: 12}} dy={10} />
+                <YAxis axisLine={false} tickLine={false} tick={{fill: '#6B7280', fontSize: 12}} />
+                <RechartsTooltip 
+                  contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 20px -4px rgba(0,0,0,0.1)' }}
+                  labelStyle={{ fontWeight: 'bold', color: '#111827', marginBottom: '8px' }}
+                />
+                <Area type="monotone" dataKey="ziyadah" stroke="#0F7B53" strokeWidth={3} fillOpacity={1} fill="url(#colorZiyadah)" />
+                <Area type="monotone" dataKey="murajaah" stroke="#3B82F6" strokeWidth={3} fillOpacity={1} fill="url(#colorMurajaah)" />
+              </AreaChart>
+            </ResponsiveContainer>
+          </ChartCard>
+        </motion.div>
+
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
+          <ChartCard title="Distribusi Kualitas">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={kualitasChartData}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={80}
+                  outerRadius={110}
+                  paddingAngle={2}
+                  dataKey="value"
+                >
+                  {kualitasChartData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.fill} />
+                  ))}
+                </Pie>
+                <RechartsTooltip 
+                  formatter={(value: number) => [`${value}%`, 'Persentase']}
+                  contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 20px -4px rgba(0,0,0,0.1)' }}
+                />
+                <Legend verticalAlign="bottom" height={36} iconType="circle" />
+              </PieChart>
+            </ResponsiveContainer>
+          </ChartCard>
+        </motion.div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }} className="card p-6">
+          <h3 className="font-bold text-xl mb-6">Aktivitas Terbaru</h3>
+          <div className="space-y-6">
+            {recentActivities.map((activity, i) => (
+              <div key={activity.id} className="flex gap-4 relative">
+                {i !== recentActivities.length - 1 && (
+                  <div className="absolute top-10 bottom-[-24px] left-5 w-0.5 bg-gray-100"></div>
+                )}
+                <Avatar className="h-10 w-10 shrink-0 border border-gray-100">
+                  <AvatarImage src={activity.avatar} />
+                  <AvatarFallback className="bg-primary-50 text-primary">{getInitials(activity.santriNama)}</AvatarFallback>
+                </Avatar>
+                <div>
+                  <p className="text-sm">
+                    <span className="font-semibold text-dark">{activity.santriNama}</span>
+                    <span className="text-muted-foreground"> • {activity.action}</span>
+                  </p>
+                  <p className="text-sm font-medium mt-1">{activity.detail}</p>
+                  <p className="text-xs text-muted-foreground mt-1">{formatDateShort(activity.timestamp)}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </motion.div>
+
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }} className="card p-6">
+          <h3 className="font-bold text-xl mb-6">Peringkat Santri (Juz Terbanyak)</h3>
+          <div className="space-y-4">
+            {topSantri.map((santri) => (
+              <div key={santri.rank} className="flex items-center justify-between p-4 rounded-2xl bg-gray-50 hover:bg-primary-50 transition-colors">
+                <div className="flex items-center gap-4">
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm
+                    ${santri.rank === 1 ? 'bg-amber-100 text-amber-600' : 
+                      santri.rank === 2 ? 'bg-gray-200 text-gray-600' : 
+                      santri.rank === 3 ? 'bg-orange-100 text-orange-600' : 
+                      'bg-white text-gray-400'}`}>
+                    #{santri.rank}
+                  </div>
+                  <div>
+                    <p className="font-semibold text-dark">{santri.nama}</p>
+                    <p className="text-sm text-muted-foreground">{santri.juz} Juz Selesai</p>
+                  </div>
+                </div>
+                <Badge variant="success" className="px-3 py-1 text-sm font-bold shadow-sm">{santri.skor}</Badge>
+              </div>
+            ))}
+          </div>
+        </motion.div>
+      </div>
+    </div>
+  );
+}

@@ -1,0 +1,76 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  nama      String
+  email     String   @unique
+  password  String
+  role      String   @default("ustadz") // admin, ustadz
+  avatar    String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Santri {
+  id        String   @id @default(cuid())
+  nama      String
+  nis       String   @unique
+  kelas     String
+  status    String   @default("active") // active, inactive
+  target    Int      @default(30)       // target juz
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  hafalans  Hafalan[]
+  kehadirans Kehadiran[]
+  tes       Tes[]
+}
+
+model Hafalan {
+  id        String   @id @default(cuid())
+  santriId  String
+  santri    Santri   @relation(fields: [santriId], references: [id], onDelete: Cascade)
+  tanggal   DateTime
+  jenis     String   // ziyadah, murajaah
+  surah     String
+  ayatMulai Int
+  ayatAkhir Int
+  kualitas  String   // mumtaz, jayyid-jiddan, jayyid, maqbul, ghair-maqbul
+  catatan   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Kehadiran {
+  id        String   @id @default(cuid())
+  santriId  String
+  santri    Santri   @relation(fields: [santriId], references: [id], onDelete: Cascade)
+  tanggal   DateTime
+  status    String   // hadir, sakit, izin, alfa
+  catatan   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Tes {
+  id        String   @id @default(cuid())
+  santriId  String
+  santri    Santri   @relation(fields: [santriId], references: [id], onDelete: Cascade)
+  tanggal   DateTime
+  jenis     String   // juz, surah
+  target    String   // e.g., "Juz 30", "Al-Baqarah"
+  nilai     Int
+  penguji   String
+  catatan   String?
+  status    String   // lulus, mengulang
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
