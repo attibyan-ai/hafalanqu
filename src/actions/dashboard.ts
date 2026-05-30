@@ -39,7 +39,7 @@ export async function getDashboardStats() {
   });
   
   const hadirCount = kehadirans.filter(k => k.status === "hadir").length;
-  const kehadiranPercent = kehadirans.length > 0 ? Math.round((hadirCount / kehadirans.length) * 100) : 100;
+  const kehadiranPercent = kehadirans.length > 0 ? Math.round((hadirCount / kehadirans.length) * 100) : 0;
 
   const recentActivities = await prisma.hafalan.findMany({
     take: 5,
