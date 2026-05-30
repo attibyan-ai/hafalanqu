@@ -15,10 +15,9 @@ export async function getKehadirans(limit = 500) {
   });
 }
 
-export async function setKehadiran(santriId: string, tanggal: Date, status: string) {
-  // Normalize date to start of day
-  const targetDate = new Date(tanggal);
-  targetDate.setHours(0, 0, 0, 0);
+export async function setKehadiran(santriId: string, tanggalStr: string, status: string) {
+  // Use YYYY-MM-DD string to ensure date is parsed as UTC midnight
+  const targetDate = new Date(tanggalStr);
 
   // Find existing record for that day
   const existing = await prisma.kehadiran.findFirst({
@@ -43,6 +42,27 @@ export async function setKehadiran(santriId: string, tanggal: Date, status: stri
         tanggal: targetDate,
         status
       }
+    });
+  }
+  revalidatePath("/daftar-hadir");
+  revalidatePath("/dashboard");
+}
+
+export async function deleteKehadiran(santriId: string, tanggalStr: string) {
+  const targetDate = new Date(tanggalStr);
+  const existing = await prisma.kehadiran.findFirst({
+    where: {
+      santriId,
+      tanggal: {
+        gte: targetDate,
+        lt: new Date(targetDate.getTime() + 24 * 60 * 60 * 1000)
+      }
+    }
+  });
+
+  if (existing) {
+    await prisma.kehadiran.delete({
+      where: { id: existing.id }
     });
   }
   revalidatePath("/daftar-hadir");

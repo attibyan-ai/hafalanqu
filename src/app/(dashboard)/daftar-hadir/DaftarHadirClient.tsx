@@ -7,9 +7,10 @@ import { PageHeader, StatCard, SubmitButton, FormField } from "@/components/shar
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 import { cn, getStatusColor, getStatusLabel } from "@/lib/utils";
-import { Users, UserCheck, UserMinus, UserX } from "lucide-react";
-import { setKehadiran } from "@/actions/kehadiran";
+import { Users, UserCheck, UserMinus, UserX, Trash2 } from "lucide-react";
+import { setKehadiran, deleteKehadiran } from "@/actions/kehadiran";
 
 const MONTHS = [
   "Januari", "Februari", "Maret", "April", "Mei", "Juni", 
@@ -23,6 +24,7 @@ export default function DaftarHadirClient({ initialData, santris, hafalans }: { 
   // Dialog State
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [selectedCell, setSelectedCell] = useState<{ santriId: string, santriNama: string, day: number, status: string } | null>(null);
   const [formStatus, setFormStatus] = useState("hadir");
 
@@ -72,25 +74,41 @@ export default function DaftarHadirClient({ initialData, santris, hafalans }: { 
   }, [matrix]);
 
   const handleCellClick = (santriId: string, santriNama: string, day: number, status: string) => {
-    // If it's inferred as hadir from hafalan, maybe we shouldn't allow changing it to alpha
-    // But we let them override it anyway, the backend will just save the Kehadiran.
     setSelectedCell({ santriId, santriNama, day, status: status || "hadir" });
     setFormStatus(status || "hadir");
     setIsDialogOpen(true);
+  };
+
+  const getTargetDateStr = () => {
+    if (!selectedCell) return "";
+    return `${selectedYear}-${selectedMonth.padStart(2, '0')}-${selectedCell.day.toString().padStart(2, '0')}`;
   };
 
   const handleSaveKehadiran = async () => {
     if (!selectedCell) return;
     setIsSubmitting(true);
     try {
-      const date = new Date(parseInt(selectedYear), parseInt(selectedMonth) - 1, selectedCell.day);
-      await setKehadiran(selectedCell.santriId, date, formStatus);
+      await setKehadiran(selectedCell.santriId, getTargetDateStr(), formStatus);
       toast.success("Kehadiran berhasil disimpan");
       setIsDialogOpen(false);
     } catch (error) {
       toast.error("Gagal menyimpan kehadiran");
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleDeleteKehadiran = async () => {
+    if (!selectedCell) return;
+    setIsDeleting(true);
+    try {
+      await deleteKehadiran(selectedCell.santriId, getTargetDateStr());
+      toast.success("Data kehadiran berhasil dihapus");
+      setIsDialogOpen(false);
+    } catch (error) {
+      toast.error("Gagal menghapus data kehadiran");
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -252,7 +270,10 @@ export default function DaftarHadirClient({ initialData, santris, hafalans }: { 
               </Select>
             </FormField>
           </div>
-          <DialogFooter>
+          <DialogFooter className="flex justify-between w-full">
+            <Button variant="outline" className="text-red-500 hover:text-red-600 hover:bg-red-50 mr-auto" onClick={handleDeleteKehadiran} disabled={isDeleting}>
+              {isDeleting ? "Menghapus..." : "Hapus Data"}
+            </Button>
             <SubmitButton isLoading={isSubmitting} onClick={handleSaveKehadiran}>
               Simpan Kehadiran
             </SubmitButton>
