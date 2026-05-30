@@ -22,6 +22,9 @@ export async function saveHasilTes(santriId: string, jenis: string, nilai: numbe
       jenis,
       nilai,
       tanggal: new Date(),
+      target: "Juz 30",
+      penguji: "Sistem Otomatis",
+      status: nilai >= 70 ? "lulus" : "mengulang",
     }
   });
 
