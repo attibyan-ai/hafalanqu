@@ -15,9 +15,18 @@ export async function getRecentHafalan(limit = 10) {
   });
 }
 
-export async function createHafalan(data: { santriId: string; surah: string; ayatMulai: number; ayatSelesai: number; halaman: number; jenis: string; kualitas: string; kelancaran: number; tajwid: number; makhraj: number; catatan: string }) {
+export async function createHafalan(data: { santriId: string; surah: string; ayatMulai: number; ayatAkhir: number; jenis: string; kualitas: string; catatan?: string; tanggal?: Date }) {
   await prisma.hafalan.create({
-    data,
+    data: {
+      santriId: data.santriId,
+      surah: data.surah,
+      ayatMulai: data.ayatMulai,
+      ayatAkhir: data.ayatAkhir,
+      jenis: data.jenis,
+      kualitas: data.kualitas,
+      catatan: data.catatan,
+      tanggal: data.tanggal || new Date(),
+    }
   });
   revalidatePath("/riwayat-hafalan");
   revalidatePath("/dashboard");
