@@ -1,0 +1,336 @@
+"use client";
+
+import { useState, useEffect, useMemo } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { useRouter, useSearchParams } from "next/navigation";
+import { toast } from "sonner";
+import { ArrowLeft, CheckCircle2, XCircle, Loader2, Trophy, ArrowRight } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { FormField } from "@/components/shared";
+import { saveHasilTes } from "@/actions/tes";
+
+type Question = {
+  id: number;
+  questionText: string;
+  correctAnswer: string;
+  options: string[];
+  surahName: string;
+  ayahNumber: number;
+};
+
+export default function QuizClient({ santris }: { santris: any[] }) {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const jenis = searchParams.get("jenis") || "tebak-surah";
+
+  const [mode, setMode] = useState<"setup" | "loading" | "playing" | "result">("setup");
+  const [selectedSantri, setSelectedSantri] = useState("");
+  
+  const [questions, setQuestions] = useState<Question[]>([]);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [score, setScore] = useState(0);
+  const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
+  const [isAnswerChecked, setIsAnswerChecked] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+
+  const jenisLabel = useMemo(() => {
+    if (jenis === "sambung-setelah") return "Sambung Ayat Setelahnya";
+    if (jenis === "sambung-sebelum") return "Sambung Ayat Sebelumnya";
+    if (jenis === "tebak-surah") return "Tebak Surah";
+    return "Tes Hafalan";
+  }, [jenis]);
+
+  const handleStart = async () => {
+    if (!selectedSantri) {
+      toast.error("Pilih santri terlebih dahulu");
+      return;
+    }
+    setMode("loading");
+
+    try {
+      // Fetch Juz 30 data as our question bank
+      const res = await fetch("https://api.alquran.cloud/v1/juz/30/quran-uthmani");
+      const data = await res.json();
+      const ayahs = data.data.ayahs;
+
+      const generatedQuestions: Question[] = [];
+      const usedIndices = new Set<number>();
+
+      for (let i = 0; i < 5; i++) {
+        let r = Math.floor(Math.random() * ayahs.length);
+        
+        if (jenis === "sambung-setelah") {
+          // ensure not the last ayah
+          while (usedIndices.has(r) || r === ayahs.length - 1 || ayahs[r].surah.number !== ayahs[r+1].surah.number) {
+            r = Math.floor(Math.random() * ayahs.length);
+          }
+          usedIndices.add(r);
+          
+          const qAyah = ayahs[r];
+          const correctAyah = ayahs[r+1];
+          
+          // Pick 3 wrong ayahs
+          const options = [correctAyah.text];
+          while(options.length < 4) {
+            const wrong = ayahs[Math.floor(Math.random() * ayahs.length)].text;
+            if (!options.includes(wrong)) options.push(wrong);
+          }
+
+          generatedQuestions.push({
+            id: i,
+            questionText: qAyah.text,
+            correctAnswer: correctAyah.text,
+            options: options.sort(() => Math.random() - 0.5),
+            surahName: qAyah.surah.name,
+            ayahNumber: qAyah.numberInSurah,
+          });
+        } 
+        else if (jenis === "sambung-sebelum") {
+          // ensure not the first ayah
+          while (usedIndices.has(r) || r === 0 || ayahs[r].surah.number !== ayahs[r-1].surah.number) {
+            r = Math.floor(Math.random() * ayahs.length);
+          }
+          usedIndices.add(r);
+          
+          const qAyah = ayahs[r];
+          const correctAyah = ayahs[r-1];
+          
+          const options = [correctAyah.text];
+          while(options.length < 4) {
+            const wrong = ayahs[Math.floor(Math.random() * ayahs.length)].text;
+            if (!options.includes(wrong)) options.push(wrong);
+          }
+
+          generatedQuestions.push({
+            id: i,
+            questionText: qAyah.text,
+            correctAnswer: correctAyah.text,
+            options: options.sort(() => Math.random() - 0.5),
+            surahName: qAyah.surah.name,
+            ayahNumber: qAyah.numberInSurah,
+          });
+        }
+        else { // tebak-surah
+          while (usedIndices.has(r)) {
+            r = Math.floor(Math.random() * ayahs.length);
+          }
+          usedIndices.add(r);
+          
+          const qAyah = ayahs[r];
+          const correctSurah = qAyah.surah.name;
+          
+          const options = [correctSurah];
+          while(options.length < 4) {
+            const wrong = ayahs[Math.floor(Math.random() * ayahs.length)].surah.name;
+            if (!options.includes(wrong)) options.push(wrong);
+          }
+
+          generatedQuestions.push({
+            id: i,
+            questionText: qAyah.text,
+            correctAnswer: correctSurah,
+            options: options.sort(() => Math.random() - 0.5),
+            surahName: correctSurah,
+            ayahNumber: qAyah.numberInSurah,
+          });
+        }
+      }
+
+      setQuestions(generatedQuestions);
+      setMode("playing");
+    } catch (error) {
+      toast.error("Gagal memuat soal dari server Alquran");
+      setMode("setup");
+    }
+  };
+
+  const handleAnswer = (opt: string) => {
+    if (isAnswerChecked) return;
+    setSelectedAnswer(opt);
+    setIsAnswerChecked(true);
+
+    if (opt === questions[currentIndex].correctAnswer) {
+      setScore(s => s + 20); // 5 questions = 20 pts each
+    }
+  };
+
+  const handleNext = async () => {
+    if (currentIndex < questions.length - 1) {
+      setCurrentIndex(c => c + 1);
+      setSelectedAnswer(null);
+      setIsAnswerChecked(false);
+    } else {
+      // Finish
+      setMode("result");
+      setIsSaving(true);
+      try {
+        await saveHasilTes(selectedSantri, jenis, score);
+        toast.success("Hasil tes berhasil disimpan");
+      } catch (e) {
+        toast.error("Gagal menyimpan hasil tes");
+      } finally {
+        setIsSaving(false);
+      }
+    }
+  };
+
+  if (mode === "setup") {
+    return (
+      <div className="max-w-xl mx-auto mt-10">
+        <Button variant="ghost" className="mb-6 -ml-4 text-muted-foreground" onClick={() => router.back()}>
+          <ArrowLeft className="w-4 h-4 mr-2" /> Kembali
+        </Button>
+        <div className="card p-8">
+          <div className="w-16 h-16 bg-primary-50 text-primary rounded-2xl flex items-center justify-center mb-6">
+            <CheckCircle2 className="w-8 h-8" />
+          </div>
+          <h1 className="text-2xl font-bold text-dark mb-2">Mulai {jenisLabel}</h1>
+          <p className="text-muted-foreground mb-8">Pilih santri yang akan diuji hafalannya. Tes terdiri dari 5 soal acak dari Juz 30.</p>
+          
+          <div className="space-y-6">
+            <FormField label="Pilih Santri">
+              <Select value={selectedSantri} onValueChange={setSelectedSantri}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Pilih santri..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {santris.map(s => (
+                    <SelectItem key={s.id} value={s.id}>{s.nama}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </FormField>
+            <Button className="w-full text-lg h-12" onClick={handleStart}>Mulai Kuis</Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (mode === "loading") {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh]">
+        <Loader2 className="w-12 h-12 text-primary animate-spin mb-4" />
+        <p className="text-muted-foreground animate-pulse">Menyiapkan soal dari Alquran Cloud...</p>
+      </div>
+    );
+  }
+
+  if (mode === "result") {
+    const santriName = santris.find(s => s.id === selectedSantri)?.nama;
+    return (
+      <div className="max-w-xl mx-auto mt-10">
+        <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="card p-8 text-center">
+          <div className="w-24 h-24 mx-auto bg-amber-100 text-amber-500 rounded-full flex items-center justify-center mb-6">
+            <Trophy className="w-12 h-12" />
+          </div>
+          <h1 className="text-3xl font-bold text-dark mb-2">Tes Selesai!</h1>
+          <p className="text-muted-foreground mb-8">Hasil tes untuk <strong className="text-dark">{santriName}</strong></p>
+          
+          <div className="bg-gray-50 rounded-2xl p-6 mb-8 border border-gray-100">
+            <div className="text-sm text-muted-foreground font-medium mb-1">Total Skor</div>
+            <div className={`text-6xl font-extrabold ${score >= 70 ? 'text-emerald-500' : 'text-amber-500'}`}>
+              {score}
+            </div>
+            <div className="text-sm text-muted-foreground mt-2">Dari 100 poin (5 Soal)</div>
+          </div>
+          
+          <Button className="w-full h-12" onClick={() => router.push("/tes-hafalan")} disabled={isSaving}>
+            {isSaving ? <Loader2 className="w-5 h-5 animate-spin mr-2" /> : null}
+            {isSaving ? "Menyimpan..." : "Kembali ke Beranda Tes"}
+          </Button>
+        </motion.div>
+      </div>
+    );
+  }
+
+  const currentQ = questions[currentIndex];
+  const isCorrect = selectedAnswer === currentQ.correctAnswer;
+
+  return (
+    <div className="max-w-3xl mx-auto mt-6">
+      <div className="flex items-center justify-between mb-8">
+        <h2 className="text-xl font-bold text-dark">{jenisLabel}</h2>
+        <div className="bg-white px-4 py-2 rounded-full font-bold text-primary shadow-sm text-sm">
+          Soal {currentIndex + 1} / 5
+        </div>
+      </div>
+
+      <motion.div 
+        key={currentIndex}
+        initial={{ opacity: 0, x: 20 }}
+        animate={{ opacity: 1, x: 0 }}
+        exit={{ opacity: 0, x: -20 }}
+        className="card p-8 md:p-12 mb-8 text-center"
+      >
+        <div className="text-sm font-semibold text-muted-foreground mb-6 uppercase tracking-wider">
+          {jenis === "tebak-surah" ? "Surah Apa Ini?" : "Lanjutkan Ayat Berikut"}
+        </div>
+        <div 
+          className="font-amiri text-4xl md:text-5xl leading-[1.8] text-dark mb-8" 
+          dir="rtl"
+        >
+          {currentQ.questionText}
+        </div>
+        {(jenis === "sambung-setelah" || jenis === "sambung-sebelum") && (
+          <div className="text-sm text-muted-foreground">
+            {currentQ.surahName} : {currentQ.ayahNumber}
+          </div>
+        )}
+      </motion.div>
+
+      <div className="grid gap-4">
+        <AnimatePresence>
+          {currentQ.options.map((opt, idx) => {
+            let btnClass = "border-gray-200 hover:border-primary hover:bg-primary-50 text-dark";
+            let icon = null;
+            
+            if (isAnswerChecked) {
+              if (opt === currentQ.correctAnswer) {
+                btnClass = "border-emerald-500 bg-emerald-50 text-emerald-800 ring-2 ring-emerald-500/20";
+                icon = <CheckCircle2 className="w-5 h-5 text-emerald-600" />;
+              } else if (opt === selectedAnswer) {
+                btnClass = "border-red-500 bg-red-50 text-red-800";
+                icon = <XCircle className="w-5 h-5 text-red-500" />;
+              } else {
+                btnClass = "border-gray-100 opacity-50 bg-gray-50 text-gray-400";
+              }
+            }
+
+            return (
+              <motion.button
+                key={idx}
+                onClick={() => handleAnswer(opt)}
+                disabled={isAnswerChecked}
+                whileHover={!isAnswerChecked ? { scale: 1.01 } : {}}
+                whileTap={!isAnswerChecked ? { scale: 0.99 } : {}}
+                className={`w-full text-left p-6 rounded-2xl border-2 transition-all flex items-center justify-between ${btnClass}`}
+              >
+                <div 
+                  className={jenis !== "tebak-surah" ? "font-amiri text-2xl leading-loose" : "font-semibold text-lg"} 
+                  dir={jenis !== "tebak-surah" ? "rtl" : "ltr"}
+                >
+                  {opt}
+                </div>
+                {icon && <div>{icon}</div>}
+              </motion.button>
+            );
+          })}
+        </AnimatePresence>
+      </div>
+
+      {isAnswerChecked && (
+        <motion.div 
+          initial={{ opacity: 0, y: 10 }} 
+          animate={{ opacity: 1, y: 0 }} 
+          className="mt-8 flex justify-end"
+        >
+          <Button size="lg" className="px-8 text-lg" onClick={handleNext}>
+            {currentIndex < questions.length - 1 ? "Soal Selanjutnya" : "Selesai"} <ArrowRight className="w-5 h-5 ml-2" />
+          </Button>
+        </motion.div>
+      )}
+    </div>
+  );
+}

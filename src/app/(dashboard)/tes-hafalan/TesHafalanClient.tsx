@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+import Link from "next/link";
 import { PageHeader } from "@/components/shared";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -99,9 +100,11 @@ export default function TesHafalanClient({ initialData }: { initialData: any[] }
               <h3 className="text-xl font-bold text-dark group-hover:text-dark mb-2 transition-colors">{test.title}</h3>
               <p className="text-muted-foreground group-hover:text-gray-600 mb-8 transition-colors flex-1">{test.desc}</p>
               
-              <Button className="w-full justify-between bg-primary/10 text-primary hover:bg-primary hover:text-white border-0 group-hover:shadow-lg transition-all mt-auto" variant="outline">
-                Mulai Tes
-                <ChevronRight className="w-4 h-4" />
+              <Button asChild className="w-full justify-between bg-primary/10 text-primary hover:bg-primary hover:text-white border-0 group-hover:shadow-lg transition-all mt-auto" variant="outline">
+                <Link href={`/tes-hafalan/play?jenis=${test.id}`}>
+                  Mulai Tes
+                  <ChevronRight className="w-4 h-4" />
+                </Link>
               </Button>
             </motion.div>
           );

@@ -79,6 +79,7 @@ const config: Config = {
       },
       fontFamily: {
         sans: ["Inter", "system-ui", "sans-serif"],
+        amiri: ["var(--font-amiri)", "serif"],
       },
       fontSize: {
         "display-lg": ["3.5rem", { lineHeight: "1.1", fontWeight: "700", letterSpacing: "-0.02em" }],
