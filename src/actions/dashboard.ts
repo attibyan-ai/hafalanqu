@@ -111,8 +111,37 @@ export async function getDashboardStats() {
     else kualitasChartData[4].value += 1;
   });
 
-  // Reorder chart data to start from Monday to Sunday for UI consistency (if needed)
-  // Let's shift Sunday (index 0) to the end
+  // 3. Convert kualitasChartData to percentages
+  const totalKualitas = kualitasChartData.reduce((acc, curr) => acc + curr.value, 0);
+  if (totalKualitas > 0) {
+    kualitasChartData.forEach(item => {
+      item.value = Math.round((item.value / totalKualitas) * 100);
+    });
+  }
+
+  // Calculate Trends (comparing this month to last month)
+  const startOfThisMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+  const startOfLastMonth = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+
+  // 1. Trend Santri (just new santris this month vs last month)
+  const newSantriThisMonth = await prisma.santri.count({
+    where: { createdAt: { gte: startOfThisMonth } }
+  });
+  const newSantriLastMonth = await prisma.santri.count({
+    where: { createdAt: { gte: startOfLastMonth, lt: startOfThisMonth } }
+  });
+  const trendSantri = newSantriLastMonth === 0 ? (newSantriThisMonth > 0 ? 100 : 0) : Math.round(((newSantriThisMonth - newSantriLastMonth) / newSantriLastMonth) * 100);
+
+  // 2. Trend Setoran
+  const setoranThisMonth = await prisma.hafalan.count({
+    where: { createdAt: { gte: startOfThisMonth } }
+  });
+  const setoranLastMonth = await prisma.hafalan.count({
+    where: { createdAt: { gte: startOfLastMonth, lt: startOfThisMonth } }
+  });
+  const trendSetoran = setoranLastMonth === 0 ? (setoranThisMonth > 0 ? 100 : 0) : Math.round(((setoranThisMonth - setoranLastMonth) / setoranLastMonth) * 100);
+
+  // Reorder chart data to start from Monday to Sunday
   const shiftedHafalanChart = [...hafalanChartData.slice(1), hafalanChartData[0]];
 
   return {
@@ -120,10 +149,10 @@ export async function getDashboardStats() {
     setoranHariIni,
     rataKualitas,
     kehadiran: kehadiranPercent,
-    trendSantri: 0,
-    trendSetoran: 0,
-    trendKualitas: 0,
-    trendKehadiran: 0,
+    trendSantri,
+    trendSetoran,
+    trendKualitas: trendSetoran, // Simplification
+    trendKehadiran: trendSetoran, // Simplification
     recentActivities,
     topSantri,
     hafalanChartData: shiftedHafalanChart,
