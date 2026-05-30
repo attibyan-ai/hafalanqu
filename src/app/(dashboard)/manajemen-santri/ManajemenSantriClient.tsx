@@ -118,6 +118,9 @@ export default function ManajemenSantriClient({ initialData }: { initialData: Sa
   const [statusFilter, setStatusFilter] = useState("all");
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const { register, handleSubmit, formState: { errors }, reset, watch, setValue } = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -129,14 +132,21 @@ export default function ManajemenSantriClient({ initialData }: { initialData: Sa
     return true;
   });
 
-  const handleDelete = async (id: string) => {
-    if(confirm("Yakin ingin menghapus santri ini?")) {
-      try {
-        await deleteSantri(id);
-        toast.success("Santri berhasil dihapus");
-      } catch (error) {
-        toast.error("Gagal menghapus santri");
-      }
+  const handleDelete = (id: string) => {
+    setDeleteId(id);
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteId) return;
+    setIsDeleting(true);
+    try {
+      await deleteSantri(deleteId);
+      toast.success("Santri berhasil dihapus");
+      setDeleteId(null);
+    } catch (error) {
+      toast.error("Gagal menghapus santri");
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -253,6 +263,27 @@ export default function ManajemenSantriClient({ initialData }: { initialData: Sa
           emptyTitle="Data santri tidak ditemukan"
         />
       </div>
+      <Dialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
+        <DialogContent className="sm:max-w-[400px] text-center p-8">
+          <div className="w-16 h-16 bg-red-100 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Trash2 className="w-8 h-8" />
+          </div>
+          <DialogHeader>
+            <DialogTitle className="text-center text-xl">Hapus Santri</DialogTitle>
+            <DialogDescription className="text-center text-base">
+              Apakah Anda yakin ingin menghapus santri ini? Data hafalan dan kehadiran yang terhubung juga akan terhapus.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex gap-3 justify-center mt-6">
+            <Button variant="outline" className="w-full" onClick={() => setDeleteId(null)} disabled={isDeleting}>
+              Batal
+            </Button>
+            <Button variant="destructive" className="w-full" onClick={confirmDelete} disabled={isDeleting}>
+              {isDeleting ? "Menghapus..." : "Ya, Hapus"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </motion.div>
   );
 }

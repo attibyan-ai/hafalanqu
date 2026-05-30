@@ -1,8 +1,12 @@
 "use client";
 
+import { useState } from "react";
 import { motion } from "framer-motion";
-import Link from "next/link";
-import { PageHeader } from "@/components/shared";
+import { useRouter } from "next/navigation";
+import { PageHeader, FormField } from "@/components/shared";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ArrowRight, ArrowLeft, HelpCircle, Shuffle, ChevronRight, Clock, CheckCircle2, XCircle } from "lucide-react";
@@ -43,7 +47,15 @@ const testTypes = [
   }
 ];
 
-export default function TesHafalanClient({ initialData }: { initialData: any[] }) {
+export default function TesHafalanClient({ initialData, santris }: { initialData: any[], santris: any[] }) {
+  const router = useRouter();
+  const [isSetupOpen, setIsSetupOpen] = useState(false);
+  const [selectedTestId, setSelectedTestId] = useState("");
+  
+  const [selectedSantri, setSelectedSantri] = useState("");
+  const [targetType, setTargetType] = useState("juz");
+  const [targetValue, setTargetValue] = useState("");
+
   const container = {
     hidden: { opacity: 0 },
     show: {
@@ -64,6 +76,19 @@ export default function TesHafalanClient({ initialData }: { initialData: any[] }
     if (score >= 70) return "bg-blue-500";
     if (score >= 50) return "bg-amber-500";
     return "bg-red-500";
+  };
+
+  const openSetup = (id: string) => {
+    setSelectedTestId(id);
+    setIsSetupOpen(true);
+  };
+
+  const handleStartQuiz = () => {
+    if (!selectedSantri || !targetValue) {
+      toast.error("Mohon lengkapi semua pilihan (Santri dan Target)");
+      return;
+    }
+    router.push(`/tes-hafalan/play?jenis=${selectedTestId}&santriId=${selectedSantri}&targetType=${targetType}&targetValue=${targetValue}`);
   };
 
   return (
@@ -100,11 +125,13 @@ export default function TesHafalanClient({ initialData }: { initialData: any[] }
               <h3 className="text-xl font-bold text-dark group-hover:text-dark mb-2 transition-colors">{test.title}</h3>
               <p className="text-muted-foreground group-hover:text-gray-600 mb-8 transition-colors flex-1">{test.desc}</p>
               
-              <Button asChild className="w-full justify-between bg-primary/10 text-primary hover:bg-primary hover:text-white border-0 group-hover:shadow-lg transition-all mt-auto" variant="outline">
-                <Link href={`/tes-hafalan/play?jenis=${test.id}`}>
-                  Mulai Tes
-                  <ChevronRight className="w-4 h-4" />
-                </Link>
+              <Button 
+                onClick={() => openSetup(test.id)}
+                className="w-full justify-between bg-primary/10 text-primary hover:bg-primary hover:text-white border-0 group-hover:shadow-lg transition-all mt-auto" 
+                variant="outline"
+              >
+                Mulai Tes
+                <ChevronRight className="w-4 h-4" />
               </Button>
             </motion.div>
           );
@@ -182,6 +209,67 @@ export default function TesHafalanClient({ initialData }: { initialData: any[] }
           </table>
         </div>
       </div>
+
+      <Dialog open={isSetupOpen} onOpenChange={setIsSetupOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Persiapan Tes Hafalan</DialogTitle>
+            <DialogDescription>
+              Silakan lengkapi data berikut sebelum kuis dimulai.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4 space-y-4">
+            <FormField label="Pilih Santri">
+              <Select value={selectedSantri} onValueChange={setSelectedSantri}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Pilih santri..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {santris?.map(s => (
+                    <SelectItem key={s.id} value={s.id}>{s.nama}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </FormField>
+
+            <FormField label="Target Mode">
+              <Select value={targetType} onValueChange={(val) => {
+                setTargetType(val);
+                setTargetValue("");
+              }}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="juz">Berdasarkan Juz</SelectItem>
+                  <SelectItem value="surah">Berdasarkan Surah</SelectItem>
+                </SelectContent>
+              </Select>
+            </FormField>
+
+            <FormField label={targetType === "juz" ? "Pilih Juz" : "Pilih Surah"}>
+              <Select value={targetValue} onValueChange={setTargetValue}>
+                <SelectTrigger>
+                  <SelectValue placeholder={targetType === "juz" ? "Pilih Juz..." : "Pilih Surah..."} />
+                </SelectTrigger>
+                <SelectContent className="max-h-[200px]">
+                  {targetType === "juz" 
+                    ? Array.from({length: 30}, (_, i) => i + 1).map(j => (
+                        <SelectItem key={j} value={j.toString()}>Juz {j}</SelectItem>
+                      ))
+                    : Array.from({length: 114}, (_, i) => i + 1).map(s => (
+                        <SelectItem key={s} value={s.toString()}>Surah Ke-{s}</SelectItem>
+                      ))
+                  }
+                </SelectContent>
+              </Select>
+            </FormField>
+          </div>
+          <DialogFooter>
+            <Button onClick={handleStartQuiz} className="w-full">Masuk Kuis</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </motion.div>
   );
 }

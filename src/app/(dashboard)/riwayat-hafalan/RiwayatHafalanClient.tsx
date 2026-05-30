@@ -7,6 +7,7 @@ import { Eye, Pencil, Trash2, Download } from "lucide-react";
 import { PageHeader, DataTable, SearchInput, FilterDropdown } from "@/components/shared";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { formatDate, getKualitasColor, getKualitasLabel } from "@/lib/utils";
 import { deleteHafalan } from "@/actions/hafalan";
 import { toast } from "sonner";
@@ -77,6 +78,9 @@ export default function RiwayatHafalanClient({ initialData }: { initialData: any
   const [globalFilter, setGlobalFilter] = useState("");
   const [jenisFilter, setJenisFilter] = useState("all");
   const [kualitasFilter, setKualitasFilter] = useState("all");
+  
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const formattedData: HafalanData[] = initialData.map(h => ({
     id: h.id,
@@ -95,14 +99,21 @@ export default function RiwayatHafalanClient({ initialData }: { initialData: any
     return true;
   });
 
-  const handleDelete = async (id: string) => {
-    if (confirm("Yakin ingin menghapus riwayat hafalan ini?")) {
-      try {
-        await deleteHafalan(id);
-        toast.success("Riwayat hafalan berhasil dihapus");
-      } catch (error) {
-        toast.error("Gagal menghapus riwayat hafalan");
-      }
+  const handleDelete = (id: string) => {
+    setDeleteId(id);
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteId) return;
+    setIsDeleting(true);
+    try {
+      await deleteHafalan(deleteId);
+      toast.success("Riwayat hafalan berhasil dihapus");
+      setDeleteId(null);
+    } catch (error) {
+      toast.error("Gagal menghapus riwayat hafalan");
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -162,6 +173,28 @@ export default function RiwayatHafalanClient({ initialData }: { initialData: any
           setGlobalFilter={setGlobalFilter}
         />
       </div>
+
+      <Dialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
+        <DialogContent className="sm:max-w-[400px] text-center p-8">
+          <div className="w-16 h-16 bg-red-100 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Trash2 className="w-8 h-8" />
+          </div>
+          <DialogHeader>
+            <DialogTitle className="text-center text-xl">Hapus Riwayat Hafalan</DialogTitle>
+            <DialogDescription className="text-center text-base">
+              Apakah Anda yakin ingin menghapus data riwayat hafalan ini?
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex gap-3 justify-center mt-6">
+            <Button variant="outline" className="w-full" onClick={() => setDeleteId(null)} disabled={isDeleting}>
+              Batal
+            </Button>
+            <Button variant="destructive" className="w-full" onClick={confirmDelete} disabled={isDeleting}>
+              {isDeleting ? "Menghapus..." : "Ya, Hapus"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </motion.div>
   );
 }

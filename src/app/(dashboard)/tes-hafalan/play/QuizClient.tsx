@@ -23,9 +23,11 @@ export default function QuizClient({ santris }: { santris: any[] }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const jenis = searchParams.get("jenis") || "tebak-surah";
+  const santriId = searchParams.get("santriId") || "";
+  const targetType = searchParams.get("targetType") || "juz";
+  const targetValue = searchParams.get("targetValue") || "30";
 
-  const [mode, setMode] = useState<"setup" | "loading" | "playing" | "result">("setup");
-  const [selectedSantri, setSelectedSantri] = useState("");
+  const [mode, setMode] = useState<"loading" | "playing" | "result">("loading");
   
   const [questions, setQuestions] = useState<Question[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -42,15 +44,19 @@ export default function QuizClient({ santris }: { santris: any[] }) {
   }, [jenis]);
 
   const handleStart = async () => {
-    if (!selectedSantri) {
-      toast.error("Pilih santri terlebih dahulu");
+    if (!santriId) {
+      toast.error("Data santri tidak ditemukan");
+      router.push("/tes-hafalan");
       return;
     }
     setMode("loading");
 
     try {
-      // Fetch Juz 30 data as our question bank
-      const res = await fetch("https://api.alquran.cloud/v1/juz/30/quran-uthmani");
+      const endpoint = targetType === "juz" 
+        ? `https://api.alquran.cloud/v1/juz/${targetValue}/quran-uthmani`
+        : `https://api.alquran.cloud/v1/surah/${targetValue}/quran-uthmani`;
+      
+      const res = await fetch(endpoint);
       const data = await res.json();
       const ayahs = data.data.ayahs;
 
@@ -141,9 +147,13 @@ export default function QuizClient({ santris }: { santris: any[] }) {
       setMode("playing");
     } catch (error) {
       toast.error("Gagal memuat soal dari server Alquran");
-      setMode("setup");
+      router.push("/tes-hafalan");
     }
   };
+
+  useEffect(() => {
+    handleStart();
+  }, []);
 
   const handleAnswer = (opt: string) => {
     if (isAnswerChecked) return;
@@ -165,7 +175,7 @@ export default function QuizClient({ santris }: { santris: any[] }) {
       setMode("result");
       setIsSaving(true);
       try {
-        await saveHasilTes(selectedSantri, jenis, score);
+        await saveHasilTes(santriId, jenis, score);
         toast.success("Hasil tes berhasil disimpan");
       } catch (e) {
         toast.error("Gagal menyimpan hasil tes");
@@ -174,39 +184,6 @@ export default function QuizClient({ santris }: { santris: any[] }) {
       }
     }
   };
-
-  if (mode === "setup") {
-    return (
-      <div className="max-w-xl mx-auto mt-10">
-        <Button variant="ghost" className="mb-6 -ml-4 text-muted-foreground" onClick={() => router.back()}>
-          <ArrowLeft className="w-4 h-4 mr-2" /> Kembali
-        </Button>
-        <div className="card p-8">
-          <div className="w-16 h-16 bg-primary-50 text-primary rounded-2xl flex items-center justify-center mb-6">
-            <CheckCircle2 className="w-8 h-8" />
-          </div>
-          <h1 className="text-2xl font-bold text-dark mb-2">Mulai {jenisLabel}</h1>
-          <p className="text-muted-foreground mb-8">Pilih santri yang akan diuji hafalannya. Tes terdiri dari 5 soal acak dari Juz 30.</p>
-          
-          <div className="space-y-6">
-            <FormField label="Pilih Santri">
-              <Select value={selectedSantri} onValueChange={setSelectedSantri}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Pilih santri..." />
-                </SelectTrigger>
-                <SelectContent>
-                  {santris.map(s => (
-                    <SelectItem key={s.id} value={s.id}>{s.nama}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </FormField>
-            <Button className="w-full text-lg h-12" onClick={handleStart}>Mulai Kuis</Button>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   if (mode === "loading") {
     return (
@@ -218,7 +195,7 @@ export default function QuizClient({ santris }: { santris: any[] }) {
   }
 
   if (mode === "result") {
-    const santriName = santris.find(s => s.id === selectedSantri)?.nama;
+    const santriName = santris.find(s => s.id === santriId)?.nama;
     return (
       <div className="max-w-xl mx-auto mt-10">
         <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="card p-8 text-center">
@@ -268,7 +245,7 @@ export default function QuizClient({ santris }: { santris: any[] }) {
           {jenis === "tebak-surah" ? "Surah Apa Ini?" : "Lanjutkan Ayat Berikut"}
         </div>
         <div 
-          className="font-amiri text-4xl md:text-5xl leading-[1.8] text-dark mb-8" 
+          className="font-amiri text-3xl md:text-4xl leading-[2] text-dark mb-8" 
           dir="rtl"
         >
           {currentQ.questionText}
@@ -308,7 +285,7 @@ export default function QuizClient({ santris }: { santris: any[] }) {
                 className={`w-full text-left p-6 rounded-2xl border-2 transition-all flex items-center justify-between ${btnClass}`}
               >
                 <div 
-                  className={jenis !== "tebak-surah" ? "font-amiri text-2xl leading-loose" : "font-semibold text-lg"} 
+                  className={jenis !== "tebak-surah" ? "font-amiri text-3xl md:text-4xl leading-loose" : "font-semibold text-lg"} 
                   dir={jenis !== "tebak-surah" ? "rtl" : "ltr"}
                 >
                   {opt}
