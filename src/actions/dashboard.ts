@@ -41,6 +41,37 @@ export async function getDashboardStats() {
   const hadirCount = kehadirans.filter(k => k.status === "hadir").length;
   const kehadiranPercent = kehadirans.length > 0 ? Math.round((hadirCount / kehadirans.length) * 100) : 100;
 
+  const recentActivities = await prisma.hafalan.findMany({
+    take: 5,
+    orderBy: { createdAt: "desc" },
+    include: { santri: true },
+  }).then(hafalans => hafalans.map(h => ({
+    id: h.id,
+    santriNama: h.santri.nama,
+    action: h.jenis === "ziyadah" ? "Setoran Ziyadah" : "Setoran Muraja'ah",
+    detail: `${h.surah} Ayat ${h.ayatMulai}-${h.ayatAkhir} (${h.kualitas})`,
+    timestamp: h.createdAt.toISOString(),
+    avatar: null
+  })));
+
+  const santris = await prisma.santri.findMany({
+    include: { hafalans: true }
+  });
+
+  const topSantri = santris
+    .map(s => {
+      // Simplification: assume 1 juz = ~20 pages or similar. Just using target for now.
+      return {
+        id: s.id,
+        nama: s.nama,
+        juz: s.target,
+        skor: s.hafalans.length * 10,
+      };
+    })
+    .sort((a, b) => b.skor - a.skor)
+    .slice(0, 5)
+    .map((s, idx) => ({ ...s, rank: idx + 1 }));
+
   return {
     totalSantri,
     setoranHariIni,
@@ -50,5 +81,7 @@ export async function getDashboardStats() {
     trendSetoran: 0,
     trendKualitas: 0,
     trendKehadiran: 0,
+    recentActivities,
+    topSantri,
   };
 }
