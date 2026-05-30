@@ -4,7 +4,6 @@ import { motion } from "framer-motion";
 import { Users, BookOpen, BarChart3, CalendarCheck } from "lucide-react";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from "recharts";
 import { StatCard, ChartCard } from "@/components/shared";
-import { dashboardStats, hafalanChartData, kualitasChartData, recentActivities, topSantri } from "@/constants/mock-data";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { getInitials, formatDateShort } from "@/lib/utils";
@@ -35,6 +34,8 @@ interface DashboardClientProps {
       skor: number;
       rank: number;
     }>;
+    hafalanChartData: Array<any>;
+    kualitasChartData: Array<any>;
   };
 }
 
@@ -84,7 +85,7 @@ export default function DashboardClient({ stats }: DashboardClientProps) {
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
           <ChartCard title="Tren Hafalan Mingguan" showPeriodSelector>
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={hafalanChartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+              <AreaChart data={stats.hafalanChartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                 <defs>
                   <linearGradient id="colorZiyadah" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="#0F7B53" stopOpacity={0.3}/>
@@ -114,7 +115,7 @@ export default function DashboardClient({ stats }: DashboardClientProps) {
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
-                  data={kualitasChartData}
+                  data={stats.kualitasChartData}
                   cx="50%"
                   cy="50%"
                   innerRadius={80}
@@ -122,7 +123,7 @@ export default function DashboardClient({ stats }: DashboardClientProps) {
                   paddingAngle={2}
                   dataKey="value"
                 >
-                  {kualitasChartData.map((entry, index) => (
+                  {stats.kualitasChartData.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={entry.fill} />
                   ))}
                 </Pie>

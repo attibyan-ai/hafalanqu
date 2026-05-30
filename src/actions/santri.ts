@@ -6,8 +6,24 @@ import { revalidatePath } from "next/cache";
 const prisma = new PrismaClient();
 
 export async function getSantris() {
-  return await prisma.santri.findMany({
+  const santris = await prisma.santri.findMany({
     orderBy: { createdAt: "desc" },
+    include: {
+      hafalans: true,
+    }
+  });
+
+  return santris.map((s) => {
+    // Simplification for progress: sum of unique juz completed?
+    // Let's just mock progress based on hafalans count for now.
+    const progressJuz = Math.min(Math.floor(s.hafalans.length / 5), s.target);
+    return {
+      ...s,
+      progressJuz,
+      targetJuz: s.target,
+      halaqah: s.kelas, // map kelas to halaqah for UI
+      noHp: "-", // mock
+    };
   });
 }
 

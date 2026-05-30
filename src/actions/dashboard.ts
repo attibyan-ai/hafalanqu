@@ -72,6 +72,25 @@ export async function getDashboardStats() {
     .slice(0, 5)
     .map((s, idx) => ({ ...s, rank: idx + 1 }));
 
+  // Calculate real chart data here (for now, empty/zeroed)
+  const hafalanChartData = [
+    { name: 'Sen', ziyadah: 0, murajaah: 0 },
+    { name: 'Sel', ziyadah: 0, murajaah: 0 },
+    { name: 'Rab', ziyadah: 0, murajaah: 0 },
+    { name: 'Kam', ziyadah: 0, murajaah: 0 },
+    { name: 'Jum', ziyadah: 0, murajaah: 0 },
+    { name: 'Sab', ziyadah: 0, murajaah: 0 },
+    { name: 'Min', ziyadah: 0, murajaah: 0 },
+  ];
+
+  const kualitasChartData = [
+    { name: 'Mumtaz', value: 0, fill: '#0F7B53' },
+    { name: 'Jayyid Jiddan', value: 0, fill: '#3B82F6' },
+    { name: 'Jayyid', value: 0, fill: '#0EA5E9' },
+    { name: 'Maqbul', value: 0, fill: '#F59E0B' },
+    { name: 'Ghair Maqbul', value: 0, fill: '#EF4444' },
+  ];
+
   return {
     totalSantri,
     setoranHariIni,
@@ -83,5 +102,7 @@ export async function getDashboardStats() {
     trendKehadiran: 0,
     recentActivities,
     topSantri,
+    hafalanChartData,
+    kualitasChartData,
   };
 }
