@@ -2,8 +2,6 @@
 
 import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
-import { useState, useMemo } from "react";
-import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { PageHeader, StatCard, SubmitButton, FormField } from "@/components/shared";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
