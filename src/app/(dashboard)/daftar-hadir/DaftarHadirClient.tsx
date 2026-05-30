@@ -79,6 +79,17 @@ export default function DaftarHadirClient({ initialData, santris, hafalans }: { 
     setIsDialogOpen(true);
   };
 
+  const checkHasHafalan = () => {
+    if (!selectedCell) return false;
+    return hafalans?.some(h => {
+      if (h.santriId !== selectedCell.santriId) return false;
+      const date = new Date(h.tanggal);
+      return date.getDate() === selectedCell.day && 
+             date.getMonth() + 1 === parseInt(selectedMonth) && 
+             date.getFullYear() === parseInt(selectedYear);
+    });
+  };
+
   const getTargetDateStr = () => {
     if (!selectedCell) return "";
     return `${selectedYear}-${selectedMonth.padStart(2, '0')}-${selectedCell.day.toString().padStart(2, '0')}`;
@@ -86,6 +97,11 @@ export default function DaftarHadirClient({ initialData, santris, hafalans }: { 
 
   const handleSaveKehadiran = async () => {
     if (!selectedCell) return;
+    if (formStatus !== "hadir" && checkHasHafalan()) {
+      toast.error("Tidak bisa diubah karena santri sudah setor hafalan hari ini.");
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       await setKehadiran(selectedCell.santriId, getTargetDateStr(), formStatus);
@@ -100,6 +116,11 @@ export default function DaftarHadirClient({ initialData, santris, hafalans }: { 
 
   const handleDeleteKehadiran = async () => {
     if (!selectedCell) return;
+    if (checkHasHafalan()) {
+      toast.error("Tidak bisa dihapus karena santri sudah setor hafalan hari ini.");
+      return;
+    }
+
     setIsDeleting(true);
     try {
       await deleteKehadiran(selectedCell.santriId, getTargetDateStr());
