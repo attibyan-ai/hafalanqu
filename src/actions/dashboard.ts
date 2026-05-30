@@ -23,7 +23,8 @@ export async function getDashboardStats() {
   const hafalans = await prisma.hafalan.findMany();
   let mumtazCount = 0;
   hafalans.forEach((h) => {
-    if (h.kualitas === "mumtaz" || h.kualitas === "jayyid-jiddan") {
+    const kualitas = h.kualitas.toLowerCase();
+    if (kualitas === "mumtaz" || kualitas === "jayyid jiddan" || kualitas === "jayyid-jiddan") {
       mumtazCount++;
     }
   });
@@ -38,7 +39,7 @@ export async function getDashboardStats() {
     },
   });
   
-  const hadirCount = kehadirans.filter(k => k.status === "hadir").length;
+  const hadirCount = kehadirans.filter(k => k.status.toLowerCase() === "hadir").length;
   const kehadiranPercent = kehadirans.length > 0 ? Math.round((hadirCount / kehadirans.length) * 100) : 0;
 
   const recentActivities = await prisma.hafalan.findMany({
@@ -48,7 +49,7 @@ export async function getDashboardStats() {
   }).then(hafalans => hafalans.map(h => ({
     id: h.id,
     santriNama: h.santri.nama,
-    action: h.jenis === "ziyadah" ? "Setoran Ziyadah" : "Setoran Muraja'ah",
+    action: h.jenis.toLowerCase() === "ziyadah" ? "Setoran Ziyadah" : "Setoran Muraja'ah",
     detail: `${h.surah} Ayat ${h.ayatMulai}-${h.ayatAkhir} (${h.kualitas})`,
     timestamp: h.createdAt.toISOString(),
     avatar: null
@@ -72,15 +73,15 @@ export async function getDashboardStats() {
     .slice(0, 5)
     .map((s, idx) => ({ ...s, rank: idx + 1 }));
 
-  // Calculate real chart data here (for now, empty/zeroed)
+  // Calculate real chart data
   const hafalanChartData = [
+    { name: 'Min', ziyadah: 0, murajaah: 0 },
     { name: 'Sen', ziyadah: 0, murajaah: 0 },
     { name: 'Sel', ziyadah: 0, murajaah: 0 },
     { name: 'Rab', ziyadah: 0, murajaah: 0 },
     { name: 'Kam', ziyadah: 0, murajaah: 0 },
     { name: 'Jum', ziyadah: 0, murajaah: 0 },
     { name: 'Sab', ziyadah: 0, murajaah: 0 },
-    { name: 'Min', ziyadah: 0, murajaah: 0 },
   ];
 
   const kualitasChartData = [
@@ -90,6 +91,29 @@ export async function getDashboardStats() {
     { name: 'Maqbul', value: 0, fill: '#F59E0B' },
     { name: 'Ghair Maqbul', value: 0, fill: '#EF4444' },
   ];
+
+  hafalans.forEach((h) => {
+    // 1. Fill hafalanChartData
+    const day = h.tanggal.getDay(); // 0 is Sunday
+    const jenis = h.jenis.toLowerCase();
+    if (jenis === "ziyadah") {
+      hafalanChartData[day].ziyadah += 1;
+    } else {
+      hafalanChartData[day].murajaah += 1;
+    }
+
+    // 2. Fill kualitasChartData
+    const kualitas = h.kualitas.toLowerCase();
+    if (kualitas === "mumtaz") kualitasChartData[0].value += 1;
+    else if (kualitas === "jayyid jiddan" || kualitas === "jayyid-jiddan") kualitasChartData[1].value += 1;
+    else if (kualitas === "jayyid") kualitasChartData[2].value += 1;
+    else if (kualitas === "maqbul") kualitasChartData[3].value += 1;
+    else kualitasChartData[4].value += 1;
+  });
+
+  // Reorder chart data to start from Monday to Sunday for UI consistency (if needed)
+  // Let's shift Sunday (index 0) to the end
+  const shiftedHafalanChart = [...hafalanChartData.slice(1), hafalanChartData[0]];
 
   return {
     totalSantri,
@@ -102,7 +126,7 @@ export async function getDashboardStats() {
     trendKehadiran: 0,
     recentActivities,
     topSantri,
-    hafalanChartData,
+    hafalanChartData: shiftedHafalanChart,
     kualitasChartData,
   };
 }
