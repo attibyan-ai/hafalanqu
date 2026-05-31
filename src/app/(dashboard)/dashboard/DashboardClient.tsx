@@ -1,8 +1,8 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Users, BookOpen, BarChart3, CalendarCheck } from "lucide-react";
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from "recharts";
+import { Users, BookOpen, BarChart3, CalendarCheck, ClipboardList, UserCog } from "lucide-react";
+import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from "recharts";
 import { StatCard, ChartCard } from "@/components/shared";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -36,11 +36,18 @@ interface DashboardClientProps {
     }>;
     hafalanChartData: Array<any>;
     kualitasChartData: Array<any>;
+    totalGuru?: number;
+    totalHalaqoh?: number;
+    adminChartAktivitas?: Array<any>;
+    adminChartKualitas?: Array<any>;
   };
 }
 
 export default function DashboardClient({ stats }: DashboardClientProps) {
   const { data: session } = useSession();
+  const role = session?.user?.role || "ustadz";
+  const isAdmin = role === "admin";
+
   const container = {
     hidden: { opacity: 0 },
     show: {
@@ -69,19 +76,73 @@ export default function DashboardClient({ stats }: DashboardClientProps) {
         </motion.p>
       </div>
 
-      <motion.div 
-        variants={container}
-        initial="hidden"
-        animate="show"
-        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"
-      >
-        <StatCard title="Total Santri" value={stats.totalSantri} trend={stats.trendSantri} icon={Users} color="primary" />
-        <StatCard title="Setoran Hari Ini" value={stats.setoranHariIni} trend={stats.trendSetoran} icon={BookOpen} color="info" />
-        <StatCard title="Rata-rata Kualitas" value={`${stats.rataKualitas}%`} trend={stats.trendKualitas} icon={BarChart3} color="success" />
-        <StatCard title="Kehadiran" value={`${stats.kehadiran}%`} trend={stats.trendKehadiran} icon={CalendarCheck} color="warning" />
-      </motion.div>
+      {isAdmin ? (
+        <motion.div 
+          variants={container}
+          initial="hidden"
+          animate="show"
+          className="grid grid-cols-1 sm:grid-cols-3 gap-6"
+        >
+          <StatCard title="Total Guru" value={stats.totalGuru || 0} trend={0} icon={UserCog} color="info" />
+          <StatCard title="Total Halaqoh" value={stats.totalHalaqoh || 0} trend={0} icon={ClipboardList} color="warning" />
+          <StatCard title="Total Santri" value={stats.totalSantri} trend={stats.trendSantri} icon={Users} color="primary" />
+        </motion.div>
+      ) : (
+        <motion.div 
+          variants={container}
+          initial="hidden"
+          animate="show"
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"
+        >
+          <StatCard title="Total Santri" value={stats.totalSantri} trend={stats.trendSantri} icon={Users} color="primary" />
+          <StatCard title="Setoran Hari Ini" value={stats.setoranHariIni} trend={stats.trendSetoran} icon={BookOpen} color="info" />
+          <StatCard title="Rata-rata Kualitas" value={`${stats.rataKualitas}%`} trend={stats.trendKualitas} icon={BarChart3} color="success" />
+          <StatCard title="Kehadiran" value={`${stats.kehadiran}%`} trend={stats.trendKehadiran} icon={CalendarCheck} color="warning" />
+        </motion.div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {isAdmin ? (
+          <>
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
+              <ChartCard title="Aktivitas Input per Halaqoh">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={stats.adminChartAktivitas || []} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5E7EB" />
+                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#6B7280', fontSize: 12}} dy={10} />
+                    <YAxis axisLine={false} tickLine={false} tick={{fill: '#6B7280', fontSize: 12}} />
+                    <RechartsTooltip 
+                      contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 20px -4px rgba(0,0,0,0.1)' }}
+                      labelStyle={{ fontWeight: 'bold', color: '#111827', marginBottom: '8px' }}
+                    />
+                    <Bar dataKey="total" name="Total Setoran" fill="#0F7B53" radius={[4, 4, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </ChartCard>
+            </motion.div>
+
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
+              <ChartCard title="Distribusi Kualitas per Halaqoh">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={stats.adminChartKualitas || []} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5E7EB" />
+                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#6B7280', fontSize: 12}} dy={10} />
+                    <YAxis axisLine={false} tickLine={false} tick={{fill: '#6B7280', fontSize: 12}} />
+                    <RechartsTooltip 
+                      contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 20px -4px rgba(0,0,0,0.1)' }}
+                      labelStyle={{ fontWeight: 'bold', color: '#111827', marginBottom: '8px' }}
+                    />
+                    <Legend verticalAlign="bottom" height={36} iconType="circle" />
+                    <Bar dataKey="Mumtaz" stackId="a" fill="#0F7B53" />
+                    <Bar dataKey="Jayyid" stackId="a" fill="#3B82F6" />
+                    <Bar dataKey="Maqbul" stackId="a" fill="#F59E0B" radius={[4, 4, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </ChartCard>
+            </motion.div>
+          </>
+        ) : (
+          <>
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
           <ChartCard title="Tren Hafalan Mingguan">
             <ResponsiveContainer width="100%" height="100%">
@@ -136,6 +197,8 @@ export default function DashboardClient({ stats }: DashboardClientProps) {
             </ResponsiveContainer>
           </ChartCard>
         </motion.div>
+          </>
+        )}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

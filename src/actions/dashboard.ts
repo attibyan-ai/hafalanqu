@@ -31,6 +31,9 @@ export async function getDashboardStats() {
     newSantriLastMonth,
     setoranThisMonth,
     setoranLastMonth,
+    totalGuru,
+    uniqueHalaqohs,
+    allHafalansAdmin,
   ] = await Promise.all([
     prisma.santri.count({ where: { status: "active", adminId } }),
     prisma.hafalan.count({ where: { createdAt: { gte: today }, santri: { adminId } } }),
@@ -51,6 +54,9 @@ export async function getDashboardStats() {
     prisma.santri.count({ where: { createdAt: { gte: startOfLastMonth, lt: startOfThisMonth }, adminId } }),
     prisma.hafalan.count({ where: { createdAt: { gte: startOfThisMonth }, santri: { adminId } } }),
     prisma.hafalan.count({ where: { createdAt: { gte: startOfLastMonth, lt: startOfThisMonth }, santri: { adminId } } }),
+    prisma.user.count({ where: { role: "ustadz", adminId } }),
+    prisma.santri.findMany({ where: { status: "active", adminId }, select: { halaqah: true }, distinct: ['halaqah'] }),
+    prisma.hafalan.findMany({ where: { santri: { adminId } }, include: { santri: { select: { halaqah: true } } } }),
   ]);
 
   // Rata-rata kualitas
@@ -152,6 +158,31 @@ export async function getDashboardStats() {
 
   const shiftedHafalanChart = [...hafalanChartData.slice(1), hafalanChartData[0]];
 
+  // Admin Charts
+  const totalHalaqoh = uniqueHalaqohs.length;
+  const aktivitasMap = new Map<string, number>();
+  const kMap = new Map<string, { mumtaz: number, jayyid: number, maqbul: number }>();
+
+  allHafalansAdmin.forEach(h => {
+    const hq = h.santri?.halaqah || "Umum";
+    aktivitasMap.set(hq, (aktivitasMap.get(hq) || 0) + 1);
+    
+    if (!kMap.has(hq)) kMap.set(hq, { mumtaz: 0, jayyid: 0, maqbul: 0 });
+    const stat = kMap.get(hq)!;
+    const k = h.kualitas.toLowerCase();
+    if (k.includes("mumtaz")) stat.mumtaz += 1;
+    else if (k.includes("jayyid")) stat.jayyid += 1;
+    else stat.maqbul += 1;
+  });
+
+  const adminChartAktivitas = Array.from(aktivitasMap.entries()).map(([name, total]) => ({ name, total }));
+  const adminChartKualitas = Array.from(kMap.entries()).map(([name, stats]) => ({
+    name,
+    "Mumtaz": stats.mumtaz,
+    "Jayyid": stats.jayyid,
+    "Maqbul": stats.maqbul,
+  }));
+
   return {
     totalSantri,
     setoranHariIni,
@@ -165,5 +196,9 @@ export async function getDashboardStats() {
     topSantri,
     hafalanChartData: shiftedHafalanChart,
     kualitasChartData,
+    totalGuru,
+    totalHalaqoh,
+    adminChartAktivitas,
+    adminChartKualitas,
   };
 }
