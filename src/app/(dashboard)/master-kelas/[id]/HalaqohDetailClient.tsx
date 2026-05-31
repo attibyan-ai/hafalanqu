@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Plus, Users, Eye, Pencil, Trash2 } from "lucide-react";
+import { Plus, Users, Eye, Pencil, Trash2, ArrowLeft } from "lucide-react";
 import { SearchInput, FilterDropdown, DataTable } from "@/components/shared";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -21,7 +21,6 @@ import {
 } from "@/components/ui/alert-dialog";
 import { FormField } from "@/components/shared/FormField";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -29,6 +28,7 @@ import { toast } from "sonner";
 import { SubmitButton } from "@/components/shared/SubmitButton";
 import { ColumnDef } from "@tanstack/react-table";
 import { createSantri, deleteSantri } from "@/actions/santri";
+import Link from "next/link";
 
 interface SantriData {
   id: string;
@@ -40,8 +40,6 @@ interface SantriData {
   status: string;
   avatar?: string | null;
 }
-
-const halaqahList = ["Halaqah Utsman", "Halaqah Ali", "Halaqah Umar", "Halaqah Abu Bakar"];
 
 const columns = (onDelete: (id: string) => void): ColumnDef<SantriData>[] => [
   {
@@ -63,15 +61,6 @@ const columns = (onDelete: (id: string) => void): ColumnDef<SantriData>[] => [
     accessorKey: "nis",
     header: "NIS",
     cell: ({ row }) => <span className="font-medium text-muted-foreground">{row.original.nis}</span>,
-  },
-  {
-    accessorKey: "halaqah",
-    header: "Halaqah",
-    cell: ({ row }) => (
-      <Badge variant="secondary" className="bg-blue-50 text-blue-700 border-blue-100">
-        {row.original.halaqah}
-      </Badge>
-    ),
   },
   {
     id: "progress",
@@ -119,13 +108,11 @@ const columns = (onDelete: (id: string) => void): ColumnDef<SantriData>[] => [
 const formSchema = z.object({
   nama: z.string().min(3, "Nama minimal 3 karakter"),
   nis: z.string().min(3, "NIS minimal 3 karakter"),
-  halaqah: z.string().min(1, "Halaqah wajib dipilih"),
   targetJuz: z.string().min(1, "Target wajib diisi"),
 });
 
-export default function ManajemenSantriClient({ initialData }: { initialData: SantriData[] }) {
+export default function HalaqohDetailClient({ halaqoh, initialData }: { halaqoh: any, initialData: SantriData[] }) {
   const [globalFilter, setGlobalFilter] = useState("");
-  const [halaqahFilter, setHalaqahFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -133,12 +120,11 @@ export default function ManajemenSantriClient({ initialData }: { initialData: Sa
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  const { register, handleSubmit, formState: { errors }, reset, watch, setValue } = useForm<z.infer<typeof formSchema>>({
+  const { register, handleSubmit, formState: { errors }, reset } = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
   });
 
   const filteredData = initialData.filter(item => {
-    if (halaqahFilter !== "all" && item.halaqah !== halaqahFilter) return false;
     if (statusFilter !== "all" && item.status !== statusFilter) return false;
     return true;
   });
@@ -167,10 +153,10 @@ export default function ManajemenSantriClient({ initialData }: { initialData: Sa
       await createSantri({
         nama: data.nama,
         nis: data.nis,
-        halaqah: data.halaqah,
+        halaqah: halaqoh.nama,
         targetJuz: parseInt(data.targetJuz),
       });
-      toast.success("Data santri berhasil ditambahkan");
+      toast.success("Data santri berhasil ditambahkan ke halaqoh");
       setIsAddOpen(false);
       reset();
     } catch (error) {
@@ -182,10 +168,17 @@ export default function ManajemenSantriClient({ initialData }: { initialData: Sa
 
   return (
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
+      <Link href="/master-kelas" className="flex items-center text-sm text-muted-foreground hover:text-primary transition-colors">
+        <ArrowLeft className="w-4 h-4 mr-2" />
+        Kembali ke Manajemen Halaqoh
+      </Link>
+      
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-gray-50">Manajemen Santri</h1>
-          <p className="mt-1 text-muted-foreground">Kelola data santri, halaqah, dan target hafalan</p>
+          <h1 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-gray-50">{halaqoh.nama}</h1>
+          <p className="mt-1 text-muted-foreground">
+            {halaqoh.ustadz ? `Guru Pembimbing: ${halaqoh.ustadz.nama}` : "Belum ada guru pembimbing"} • {initialData.length} Santri
+          </p>
         </div>
         
         <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
@@ -199,7 +192,7 @@ export default function ManajemenSantriClient({ initialData }: { initialData: Sa
             <DialogHeader>
               <DialogTitle>Tambah Santri Baru</DialogTitle>
               <DialogDescription>
-                Masukkan data santri baru. Klik simpan setelah selesai.
+                Data otomatis dimasukkan ke {halaqoh.nama}
               </DialogDescription>
             </DialogHeader>
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 py-4">
@@ -213,19 +206,6 @@ export default function ManajemenSantriClient({ initialData }: { initialData: Sa
                 </FormField>
                 <FormField label="Target Juz" required error={errors.targetJuz?.message}>
                   <Input type="number" {...register("targetJuz")} placeholder="Target" />
-                </FormField>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <FormField label="Halaqah" required error={errors.halaqah?.message}>
-                  <Select onValueChange={(v) => setValue("halaqah", v, { shouldValidate: true })}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Pilih..." />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {halaqahList.map(h => <SelectItem key={h} value={h}>{h}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
                 </FormField>
               </div>
 
@@ -247,12 +227,6 @@ export default function ManajemenSantriClient({ initialData }: { initialData: Sa
             className="w-full md:w-80"
           />
           <div className="grid grid-cols-2 md:flex gap-2 md:gap-4 w-full md:w-auto">
-            <FilterDropdown 
-              label="Halaqah"
-              value={halaqahFilter}
-              onChange={setHalaqahFilter}
-              options={halaqahList.map(h => ({ value: h, label: h }))}
-            />
             <FilterDropdown 
               label="Status"
               value={statusFilter}

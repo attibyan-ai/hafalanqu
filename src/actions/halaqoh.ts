@@ -17,6 +17,21 @@ export async function getHalaqoh() {
   });
 }
 
+export async function getHalaqohById(id: string) {
+  const session = await checkAuth();
+  const adminId = (session.user as any).adminId;
+
+  const halaqoh = await prisma.halaqah.findFirst({
+    where: { id, adminId },
+    include: {
+      ustadz: { select: { nama: true } }
+    },
+  });
+
+  if (!halaqoh) throw new Error("Halaqoh tidak ditemukan");
+  return halaqoh;
+}
+
 export async function createHalaqoh(data: { nama: string; ustadzId?: string }) {
   const session = await checkAuth();
   const adminId = (session.user as any).adminId;

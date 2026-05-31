@@ -2,8 +2,9 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Plus, Edit, Trash2, Search, ClipboardList } from "lucide-react";
+import { Plus, Edit, Trash2, Search, ClipboardList, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import Link from "next/link";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -144,6 +145,12 @@ export default function MasterKelasClient({ halaqohs, ustadzList }: MasterKelasC
                     <td className="px-4 py-3 text-muted-foreground">{formatDateShort(halaqoh.createdAt.toISOString())}</td>
                     <td className="px-4 py-3 text-right">
                       <div className="flex justify-end gap-2">
+                        <Link href={`/master-kelas/${halaqoh.id}`}>
+                          <Button variant="outline" size="sm" className="gap-2 h-8">
+                            <Users className="w-4 h-4 text-emerald-600" />
+                            <span className="hidden sm:inline">Kelola Santri</span>
+                          </Button>
+                        </Link>
                         <Button variant="outline" size="icon" onClick={() => handleOpenModal(halaqoh)}>
                           <Edit className="w-4 h-4 text-blue-600" />
                         </Button>

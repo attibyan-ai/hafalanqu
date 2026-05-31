@@ -78,12 +78,6 @@ export const navigationItems: readonly NavigationItem[] = [
     icon: GraduationCap,
     allowedRoles: ["ustadz", "santri"],
   },
-  {
-    label: "Manajemen Santri",
-    href: "/manajemen-santri",
-    icon: Users,
-    allowedRoles: ["ustadz", "admin"],
-  },
 
   // Menu Santri
   {
@@ -170,12 +164,6 @@ export const mobileNavItems: readonly NavigationItem[] = [
     href: "/daftar-hadir",
     icon: CalendarCheck,
     allowedRoles: ["ustadz"],
-  },
-  {
-    label: "Santri",
-    href: "/manajemen-santri",
-    icon: Users,
-    allowedRoles: ["ustadz", "admin"],
   },
   {
     label: "Profil",
