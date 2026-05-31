@@ -10,21 +10,33 @@ export async function getSantris() {
   const santris = await prisma.santri.findMany({
     orderBy: { createdAt: "desc" },
     include: {
-      hafalans: true,
-    }
+      _count: { select: { hafalans: true } },
+      hafalans: {
+        select: {
+          ayatMulai: true,
+          ayatAkhir: true,
+        },
+      },
+    },
   });
 
   return santris.map((s) => {
     const totalAyat = s.hafalans.reduce((sum, h) => sum + Math.max(0, h.ayatAkhir - h.ayatMulai + 1), 0);
     const progressJuz = Math.min(Math.floor(totalAyat / 140), s.targetJuz);
     return {
-      ...s,
-      progressJuz,
-      targetJuz: s.targetJuz,
+      id: s.id,
+      nama: s.nama,
+      nis: s.nis,
       halaqah: s.halaqah,
+      targetJuz: s.targetJuz,
+      status: s.status,
       noHp: s.noHp || "-",
       alamat: s.alamat || "-",
       avatar: s.avatar || "",
+      createdAt: s.createdAt,
+      progressJuz,
+      totalAyat,
+      totalSetoran: s._count.hafalans,
     };
   });
 }

@@ -5,7 +5,9 @@ import TesHafalanClient from "./TesHafalanClient";
 export const dynamic = "force-dynamic";
 
 export default async function TesHafalanPage() {
-  const hasilTes = await getRecentTes(50);
-  const santris = await getSantris();
+  const [hasilTes, santris] = await Promise.all([
+    getRecentTes(50),
+    getSantris(),
+  ]);
   return <TesHafalanClient initialData={hasilTes} santris={santris} />;
 }
