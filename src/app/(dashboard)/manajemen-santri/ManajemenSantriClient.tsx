@@ -38,6 +38,7 @@ interface SantriData {
   progressJuz: number;
   targetJuz: number;
   status: string;
+  avatar?: string | null;
 }
 
 const halaqahList = ["Halaqah Utsman", "Halaqah Ali", "Halaqah Umar", "Halaqah Abu Bakar"];
