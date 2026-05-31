@@ -35,7 +35,7 @@ export const navigationItems: readonly NavigationItem[] = [
 
   // Menu Admin
   {
-    label: "Manajemen Pengguna",
+    label: "Manajemen Akun Guru & Murid",
     href: "/manajemen-pengguna",
     icon: ShieldCheck,
     allowedRoles: ["admin"],
@@ -59,7 +59,7 @@ export const navigationItems: readonly NavigationItem[] = [
     allowedRoles: ["admin"],
   },
 
-  // Menu Ustadz / Admin Shared
+  // Menu Ustadz / Admin / Santri Shared
   {
     label: "Input Hafalan",
     href: "/input-hafalan",
@@ -82,7 +82,7 @@ export const navigationItems: readonly NavigationItem[] = [
     label: "Tes Hafalan",
     href: "/tes-hafalan",
     icon: GraduationCap,
-    allowedRoles: ["ustadz", "admin"],
+    allowedRoles: ["ustadz", "admin", "santri"],
   },
   {
     label: "Manajemen Santri",
@@ -93,7 +93,7 @@ export const navigationItems: readonly NavigationItem[] = [
 
   // Menu Santri
   {
-    label: "Target Hafalan",
+    label: "Pencapaian Hafalan",
     href: "/target-hafalan",
     icon: BookOpenCheck,
     allowedRoles: ["santri"],
@@ -160,7 +160,7 @@ export const mobileNavItems: readonly NavigationItem[] = [
     allowedRoles: ["ustadz"],
   },
   {
-    label: "Target Saya",
+    label: "Pencapaian",
     href: "/target-hafalan",
     icon: BookOpenCheck,
     allowedRoles: ["santri"],

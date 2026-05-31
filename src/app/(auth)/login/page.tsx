@@ -190,10 +190,17 @@ export default function LoginPage() {
             </div>
           </div>
 
-          <p className="text-center text-sm text-muted-foreground">
-            Hubungi administrator untuk membuat akun baru atau{" "}
-            <Link href="/" className="text-primary hover:underline font-medium">kembali ke beranda</Link>.
-          </p>
+          <div className="text-center text-xs text-muted-foreground space-y-2 mt-4">
+            <p>
+              Akun <strong className="text-foreground dark:text-white">Admin</strong> dibuat oleh pembuat web (hubungi kontak <span className="font-semibold text-primary">085888892326</span> atau email <span className="font-semibold text-primary">pptqttibyanlaren@gmail.com</span>).
+            </p>
+            <p>
+              Akun <strong className="text-foreground dark:text-white">Guru & Murid</strong> dibuatkan oleh Admin.
+            </p>
+            <p className="pt-2">
+              <Link href="/" className="text-primary hover:underline font-medium">Kembali ke beranda</Link>
+            </p>
+          </div>
         </form>
       </motion.div>
     </div>

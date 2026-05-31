@@ -16,7 +16,7 @@ const routeAccessRules = [
   // ================= USTADZ & ADMIN SHARED =================
   { prefix: "/riwayat-hafalan", allowedRoles: ["ustadz", "admin"] },
   { prefix: "/daftar-hadir", allowedRoles: ["ustadz", "admin"] },
-  { prefix: "/tes-hafalan", allowedRoles: ["ustadz", "admin"] },
+  { prefix: "/tes-hafalan", allowedRoles: ["ustadz", "admin", "santri"] },
   { prefix: "/manajemen-santri", allowedRoles: ["ustadz", "admin"] },
 
   // ================= SANTRI PAGES =================
