@@ -6,8 +6,11 @@ import { checkAuth } from "@/lib/checkAuth";
 import { z } from "zod";
 
 export async function getSantris() {
-  await checkAuth();
+  const session = await checkAuth();
+  const adminId = (session.user as any).adminId;
+
   const santris = await prisma.santri.findMany({
+    where: { adminId },
     orderBy: { createdAt: "desc" },
     include: {
       _count: { select: { hafalans: true } },
@@ -49,10 +52,15 @@ const santriSchema = z.object({
 });
 
 export async function createSantri(data: { nama: string; nis: string; halaqah: string; targetJuz: number }) {
-  await checkAuth();
+  const session = await checkAuth();
+  const adminId = (session.user as any).adminId;
+
   const parsed = santriSchema.parse(data);
   await prisma.santri.create({
-    data: parsed,
+    data: {
+      ...parsed,
+      adminId,
+    },
   });
   revalidatePath("/manajemen-santri");
 }
@@ -65,19 +73,23 @@ const updateSantriSchema = z.object({
 });
 
 export async function updateSantri(id: string, data: { nama?: string; halaqah?: string; targetJuz?: number; status?: string }) {
-  await checkAuth();
+  const session = await checkAuth();
+  const adminId = (session.user as any).adminId;
+
   const parsed = updateSantriSchema.parse(data);
   await prisma.santri.update({
-    where: { id },
+    where: { id, adminId },
     data: parsed,
   });
   revalidatePath("/manajemen-santri");
 }
 
 export async function deleteSantri(id: string) {
-  await checkAuth();
+  const session = await checkAuth();
+  const adminId = (session.user as any).adminId;
+
   await prisma.santri.delete({
-    where: { id },
+    where: { id, adminId },
   });
   revalidatePath("/manajemen-santri");
 }

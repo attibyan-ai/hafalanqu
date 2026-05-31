@@ -5,8 +5,11 @@ import { revalidatePath } from "next/cache";
 import { checkAuth } from "@/lib/checkAuth";
 
 export async function getKehadirans(limit = 500) {
-  await checkAuth();
+  const session = await checkAuth();
+  const adminId = (session.user as any).adminId;
+
   return await prisma.kehadiran.findMany({
+    where: { santri: { adminId } },
     take: limit,
     orderBy: { createdAt: "desc" },
     include: {
@@ -16,7 +19,12 @@ export async function getKehadirans(limit = 500) {
 }
 
 export async function setKehadiran(santriId: string, tanggalStr: string, status: string) {
-  await checkAuth();
+  const session = await checkAuth();
+  const adminId = (session.user as any).adminId;
+
+  const santri = await prisma.santri.findUnique({ where: { id: santriId } });
+  if (!santri || santri.adminId !== adminId) throw new Error("Unauthorized santri");
+
   // Use YYYY-MM-DD string to ensure date is parsed as UTC midnight
   const targetDate = new Date(tanggalStr);
 
@@ -50,7 +58,12 @@ export async function setKehadiran(santriId: string, tanggalStr: string, status:
 }
 
 export async function deleteKehadiran(santriId: string, tanggalStr: string) {
-  await checkAuth();
+  const session = await checkAuth();
+  const adminId = (session.user as any).adminId;
+
+  const santri = await prisma.santri.findUnique({ where: { id: santriId } });
+  if (!santri || santri.adminId !== adminId) throw new Error("Unauthorized santri");
+
   const targetDate = new Date(tanggalStr);
   const existing = await prisma.kehadiran.findFirst({
     where: {

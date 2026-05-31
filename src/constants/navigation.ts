@@ -35,21 +35,15 @@ export const navigationItems: readonly NavigationItem[] = [
 
   // Menu Admin
   {
-    label: "Manajemen Akun Guru & Murid",
+    label: "Manajemen Akun",
     href: "/manajemen-pengguna",
     icon: ShieldCheck,
     allowedRoles: ["admin"],
   },
   {
-    label: "Master Kelas",
+    label: "Manajemen Halaqoh",
     href: "/master-kelas",
     icon: ClipboardList,
-    allowedRoles: ["admin"],
-  },
-  {
-    label: "Master Surat/Juz",
-    href: "/master-surat",
-    icon: BookOpenCheck,
     allowedRoles: ["admin"],
   },
   {
@@ -70,19 +64,19 @@ export const navigationItems: readonly NavigationItem[] = [
     label: "Riwayat Hafalan",
     href: "/riwayat-hafalan",
     icon: History,
-    allowedRoles: ["ustadz", "admin"],
+    allowedRoles: ["ustadz"],
   },
   {
     label: "Daftar Hadir",
     href: "/daftar-hadir",
     icon: CalendarCheck,
-    allowedRoles: ["ustadz", "admin"],
+    allowedRoles: ["ustadz"],
   },
   {
     label: "Tes Hafalan",
     href: "/tes-hafalan",
     icon: GraduationCap,
-    allowedRoles: ["ustadz", "admin", "santri"],
+    allowedRoles: ["ustadz", "santri"],
   },
   {
     label: "Manajemen Santri",
@@ -175,7 +169,7 @@ export const mobileNavItems: readonly NavigationItem[] = [
     label: "Absen",
     href: "/daftar-hadir",
     icon: CalendarCheck,
-    allowedRoles: ["ustadz", "admin"],
+    allowedRoles: ["ustadz"],
   },
   {
     label: "Santri",

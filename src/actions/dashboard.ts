@@ -4,7 +4,8 @@ import { prisma } from "@/lib/prisma";
 import { checkAuth } from "@/lib/checkAuth";
 
 export async function getDashboardStats() {
-  await checkAuth();
+  const session = await checkAuth();
+  const adminId = (session.user as any).adminId;
 
   const now = new Date();
   const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
@@ -31,24 +32,25 @@ export async function getDashboardStats() {
     setoranThisMonth,
     setoranLastMonth,
   ] = await Promise.all([
-    prisma.santri.count({ where: { status: "active" } }),
-    prisma.hafalan.count({ where: { createdAt: { gte: today } } }),
-    prisma.hafalan.findMany({ where: { createdAt: { gte: startOfLastMonth } } }),
-    prisma.kehadiran.findMany({ where: { tanggal: { gte: today } } }),
-    prisma.hafalan.findMany({ where: { createdAt: { gte: today } } }),
+    prisma.santri.count({ where: { status: "active", adminId } }),
+    prisma.hafalan.count({ where: { createdAt: { gte: today }, santri: { adminId } } }),
+    prisma.hafalan.findMany({ where: { createdAt: { gte: startOfLastMonth }, santri: { adminId } } }),
+    prisma.kehadiran.findMany({ where: { tanggal: { gte: today }, santri: { adminId } } }),
+    prisma.hafalan.findMany({ where: { createdAt: { gte: today }, santri: { adminId } } }),
     prisma.hafalan.findMany({
+      where: { santri: { adminId } },
       take: 5,
       orderBy: { createdAt: "desc" },
       include: { santri: true },
     }),
     prisma.santri.findMany({
-      where: { status: "active" },
+      where: { status: "active", adminId },
       include: { hafalans: true },
     }),
-    prisma.santri.count({ where: { createdAt: { gte: startOfThisMonth } } }),
-    prisma.santri.count({ where: { createdAt: { gte: startOfLastMonth, lt: startOfThisMonth } } }),
-    prisma.hafalan.count({ where: { createdAt: { gte: startOfThisMonth } } }),
-    prisma.hafalan.count({ where: { createdAt: { gte: startOfLastMonth, lt: startOfThisMonth } } }),
+    prisma.santri.count({ where: { createdAt: { gte: startOfThisMonth }, adminId } }),
+    prisma.santri.count({ where: { createdAt: { gte: startOfLastMonth, lt: startOfThisMonth }, adminId } }),
+    prisma.hafalan.count({ where: { createdAt: { gte: startOfThisMonth }, santri: { adminId } } }),
+    prisma.hafalan.count({ where: { createdAt: { gte: startOfLastMonth, lt: startOfThisMonth }, santri: { adminId } } }),
   ]);
 
   // Rata-rata kualitas

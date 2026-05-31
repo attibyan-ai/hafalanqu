@@ -6,8 +6,11 @@ import { checkAuth } from "@/lib/checkAuth";
 import { z } from "zod";
 
 export async function getRecentHafalan(limit = 10) {
-  await checkAuth();
+  const session = await checkAuth();
+  const adminId = (session.user as any).adminId;
+
   return await prisma.hafalan.findMany({
+    where: { santri: { adminId } },
     take: limit,
     orderBy: { createdAt: "desc" },
     include: {
@@ -30,8 +33,13 @@ const hafalanSchema = z.object({
 });
 
 export async function createHafalan(data: { santriId: string; surah: string; ayatMulai: number; ayatAkhir: number; jenis: string; kualitas: string; catatan?: string; tanggal?: Date }) {
-  await checkAuth();
+  const session = await checkAuth();
+  const adminId = (session.user as any).adminId;
+
   const parsed = hafalanSchema.parse(data);
+
+  const santri = await prisma.santri.findUnique({ where: { id: parsed.santriId } });
+  if (!santri || santri.adminId !== adminId) throw new Error("Unauthorized santri");
 
   await prisma.hafalan.create({
     data: {
@@ -50,7 +58,12 @@ export async function createHafalan(data: { santriId: string; surah: string; aya
 }
 
 export async function deleteHafalan(id: string) {
-  await checkAuth();
+  const session = await checkAuth();
+  const adminId = (session.user as any).adminId;
+
+  const hafalan = await prisma.hafalan.findUnique({ where: { id }, include: { santri: true } });
+  if (!hafalan || hafalan.santri?.adminId !== adminId) throw new Error("Unauthorized");
+
   await prisma.hafalan.delete({
     where: { id },
   });

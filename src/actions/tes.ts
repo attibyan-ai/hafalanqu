@@ -5,8 +5,11 @@ import { revalidatePath } from "next/cache";
 import { checkAuth } from "@/lib/checkAuth";
 
 export async function getRecentTes(limit = 10) {
-  await checkAuth();
+  const session = await checkAuth();
+  const adminId = (session.user as any).adminId;
+
   return await prisma.tes.findMany({
+    where: { santri: { adminId } },
     take: limit,
     orderBy: { createdAt: "desc" },
     include: {
@@ -16,7 +19,12 @@ export async function getRecentTes(limit = 10) {
 }
 
 export async function saveHasilTes(santriId: string, jenis: string, nilai: number, target: string) {
-  await checkAuth();
+  const session = await checkAuth();
+  const adminId = (session.user as any).adminId;
+
+  const santri = await prisma.santri.findUnique({ where: { id: santriId } });
+  if (!santri || santri.adminId !== adminId) throw new Error("Unauthorized santri");
+
   const tes = await prisma.tes.create({
     data: {
       santriId,
