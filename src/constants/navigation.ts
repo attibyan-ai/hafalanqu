@@ -35,9 +35,15 @@ export const navigationItems: readonly NavigationItem[] = [
 
   // Menu Admin
   {
-    label: "Manajemen Akun",
-    href: "/manajemen-pengguna",
+    label: "Manajemen Ustadz",
+    href: "/manajemen-ustadz",
     icon: ShieldCheck,
+    allowedRoles: ["admin"],
+  },
+  {
+    label: "Manajemen Santri",
+    href: "/manajemen-santri",
+    icon: Users,
     allowedRoles: ["admin"],
   },
   {

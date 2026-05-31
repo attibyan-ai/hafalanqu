@@ -8,12 +8,12 @@ import { revalidatePath } from "next/cache";
 // dan sebelumnya create-admin memakai bcryptjs, kita cek apakah ada.
 import bcrypt from "bcryptjs";
 
-export async function getAkun() {
+export async function getAkunByRole(role: string) {
   const session = await checkAuth();
   const adminId = (session.user as any).adminId;
 
   return await prisma.user.findMany({
-    where: { adminId },
+    where: { adminId, role },
     select: {
       id: true,
       nama: true,
@@ -48,7 +48,8 @@ export async function createAkun(data: { nama: string; email: string; password?:
     },
   });
 
-  revalidatePath("/manajemen-pengguna");
+  revalidatePath("/manajemen-ustadz");
+  revalidatePath("/manajemen-santri");
 }
 
 export async function updateAkun(id: string, data: { nama: string; email: string; password?: string; role: string }) {
@@ -74,7 +75,8 @@ export async function updateAkun(id: string, data: { nama: string; email: string
     data: updateData,
   });
 
-  revalidatePath("/manajemen-pengguna");
+  revalidatePath("/manajemen-ustadz");
+  revalidatePath("/manajemen-santri");
 }
 
 export async function deleteAkun(id: string) {
@@ -86,5 +88,6 @@ export async function deleteAkun(id: string) {
 
   await prisma.user.delete({ where: { id } });
 
-  revalidatePath("/manajemen-pengguna");
+  revalidatePath("/manajemen-ustadz");
+  revalidatePath("/manajemen-santri");
 }

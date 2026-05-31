@@ -22,13 +22,16 @@ interface AkunClientProps {
     createdAt: Date;
     halaqahs: Array<{ nama: string }>;
   }>;
+  title: string;
+  subtitle: string;
+  defaultRole: string;
 }
 
-export default function AkunClient({ akuns }: AkunClientProps) {
+export default function AkunClient({ akuns, title, subtitle, defaultRole }: AkunClientProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [formData, setFormData] = useState({ id: "", nama: "", email: "", password: "", role: "ustadz" });
+  const [formData, setFormData] = useState({ id: "", nama: "", email: "", password: "", role: defaultRole });
 
   const filteredAkun = akuns.filter(a => 
     a.nama.toLowerCase().includes(searchQuery.toLowerCase()) || 
@@ -39,7 +42,7 @@ export default function AkunClient({ akuns }: AkunClientProps) {
     if (akun) {
       setFormData({ id: akun.id, nama: akun.nama, email: akun.email, password: "", role: akun.role });
     } else {
-      setFormData({ id: "", nama: "", email: "", password: "", role: "ustadz" });
+      setFormData({ id: "", nama: "", email: "", password: "", role: defaultRole });
     }
     setIsModalOpen(true);
   };
@@ -77,8 +80,8 @@ export default function AkunClient({ akuns }: AkunClientProps) {
   return (
     <div className="space-y-6">
       <PageHeader 
-        title="Manajemen Akun" 
-        subtitle="Kelola akun guru dan murid di lembaga Anda" 
+        title={title} 
+        subtitle={subtitle} 
       >
         <Button onClick={() => handleOpenModal()} className="gap-2">
           <Plus className="w-4 h-4" /> Tambah Akun
@@ -171,17 +174,9 @@ export default function AkunClient({ akuns }: AkunClientProps) {
               <Label>Password {formData.id && "(Kosongkan jika tidak ingin diubah)"}</Label>
               <Input type="password" required={!formData.id} value={formData.password} onChange={e => setFormData({...formData, password: e.target.value})} placeholder="******" />
             </div>
-            <div className="space-y-2">
+            <div className="space-y-2 hidden">
               <Label>Peran (Role)</Label>
-              <Select value={formData.role} onValueChange={v => setFormData({...formData, role: v})}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Pilih Peran" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="ustadz">Guru (Ustadz)</SelectItem>
-                  <SelectItem value="santri">Murid (Santri)</SelectItem>
-                </SelectContent>
-              </Select>
+              <Input value={formData.role} readOnly />
             </div>
             <DialogFooter className="pt-4">
               <Button type="button" variant="outline" onClick={() => setIsModalOpen(false)}>Batal</Button>
