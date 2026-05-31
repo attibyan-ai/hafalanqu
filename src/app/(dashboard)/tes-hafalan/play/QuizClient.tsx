@@ -283,7 +283,7 @@ export default function QuizClient({ santris }: { santris: any[] }) {
           {jenis === "tebak-surah" ? "Surah Apa Ini?" : "Lanjutkan Ayat Berikut"}
         </div>
         <div 
-          className="font-amiri text-3xl md:text-4xl leading-[2] text-dark mb-8" 
+          className="font-amiri text-3xl md:text-4xl leading-[2.5] text-dark mb-8" 
           dir="rtl"
         >
           {currentQ.questionText}
@@ -323,7 +323,7 @@ export default function QuizClient({ santris }: { santris: any[] }) {
                 className={`w-full text-left p-6 rounded-2xl border-2 transition-all flex items-center justify-between ${btnClass}`}
               >
                 <div 
-                  className={jenis !== "tebak-surah" ? "font-amiri text-3xl md:text-4xl leading-loose" : "font-semibold text-lg"} 
+                  className={jenis !== "tebak-surah" ? "font-amiri text-3xl md:text-4xl leading-[2.5] py-1" : "font-semibold text-lg"} 
                   dir={jenis !== "tebak-surah" ? "rtl" : "ltr"}
                 >
                   {opt}
