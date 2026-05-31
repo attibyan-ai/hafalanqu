@@ -43,117 +43,151 @@ export default function QuizClient({ santris }: { santris: any[] }) {
     return "Tes Hafalan";
   }, [jenis]);
 
-  const handleStart = async () => {
-    if (!santriId) {
-      toast.error("Data santri tidak ditemukan");
-      router.push("/tes-hafalan");
-      return;
-    }
-    setMode("loading");
+  useEffect(() => {
+    let isMounted = true;
 
-    try {
-      const endpoint = targetType === "juz" 
-        ? `https://api.alquran.cloud/v1/juz/${targetValue}/quran-uthmani`
-        : `https://api.alquran.cloud/v1/surah/${targetValue}/quran-uthmani`;
-      
-      const res = await fetch(endpoint);
-      const data = await res.json();
-      const ayahs = data.data.ayahs;
+    const handleStart = async () => {
+      if (!santriId) {
+        toast.error("Data santri tidak ditemukan");
+        router.push("/tes-hafalan");
+        return;
+      }
+      if (isMounted) setMode("loading");
 
-      const generatedQuestions: Question[] = [];
-      const usedIndices = new Set<number>();
-
-      for (let i = 0; i < 5; i++) {
-        let r = Math.floor(Math.random() * ayahs.length);
+      try {
+        const endpoint = targetType === "juz" 
+          ? `https://api.alquran.cloud/v1/juz/${targetValue}/quran-uthmani`
+          : `https://api.alquran.cloud/v1/surah/${targetValue}/quran-uthmani`;
         
-        if (jenis === "sambung-setelah") {
-          // ensure not the last ayah
-          while (usedIndices.has(r) || r === ayahs.length - 1 || ayahs[r].surah.number !== ayahs[r+1].surah.number) {
-            r = Math.floor(Math.random() * ayahs.length);
-          }
-          usedIndices.add(r);
-          
-          const qAyah = ayahs[r];
-          const correctAyah = ayahs[r+1];
-          
-          // Pick 3 wrong ayahs
-          const options = [correctAyah.text];
-          while(options.length < 4) {
-            const wrong = ayahs[Math.floor(Math.random() * ayahs.length)].text;
-            if (!options.includes(wrong)) options.push(wrong);
-          }
+        const res = await fetch(endpoint);
+        const data = await res.json();
+        const ayahs = targetType === "juz" ? data.data.ayahs : data.data.ayahs;
 
-          generatedQuestions.push({
-            id: i,
-            questionText: qAyah.text,
-            correctAnswer: correctAyah.text,
-            options: options.sort(() => Math.random() - 0.5),
-            surahName: qAyah.surah.name,
-            ayahNumber: qAyah.numberInSurah,
-          });
-        } 
-        else if (jenis === "sambung-sebelum") {
-          // ensure not the first ayah
-          while (usedIndices.has(r) || r === 0 || ayahs[r].surah.number !== ayahs[r-1].surah.number) {
-            r = Math.floor(Math.random() * ayahs.length);
-          }
-          usedIndices.add(r);
-          
-          const qAyah = ayahs[r];
-          const correctAyah = ayahs[r-1];
-          
-          const options = [correctAyah.text];
-          while(options.length < 4) {
-            const wrong = ayahs[Math.floor(Math.random() * ayahs.length)].text;
-            if (!options.includes(wrong)) options.push(wrong);
-          }
-
-          generatedQuestions.push({
-            id: i,
-            questionText: qAyah.text,
-            correctAnswer: correctAyah.text,
-            options: options.sort(() => Math.random() - 0.5),
-            surahName: qAyah.surah.name,
-            ayahNumber: qAyah.numberInSurah,
-          });
+        if (!ayahs || ayahs.length === 0) {
+          throw new Error("Data ayat kosong");
         }
-        else { // tebak-surah
-          while (usedIndices.has(r)) {
-            r = Math.floor(Math.random() * ayahs.length);
-          }
-          usedIndices.add(r);
-          
-          const qAyah = ayahs[r];
-          const correctSurah = qAyah.surah.name;
-          
-          const options = [correctSurah];
-          while(options.length < 4) {
-            const wrong = ayahs[Math.floor(Math.random() * ayahs.length)].surah.name;
-            if (!options.includes(wrong)) options.push(wrong);
-          }
 
-          generatedQuestions.push({
-            id: i,
-            questionText: qAyah.text,
-            correctAnswer: correctSurah,
-            options: options.sort(() => Math.random() - 0.5),
-            surahName: correctSurah,
-            ayahNumber: qAyah.numberInSurah,
-          });
+        const generatedQuestions: Question[] = [];
+        const usedIndices = new Set<number>();
+        
+        // Prevent infinite loop if ayahs.length is too small
+        const numQuestions = Math.min(5, ayahs.length > 2 ? 5 : 0);
+        if (numQuestions === 0) {
+          throw new Error("Ayat terlalu sedikit untuk diuji");
+        }
+
+        for (let i = 0; i < numQuestions; i++) {
+          let r = Math.floor(Math.random() * ayahs.length);
+          let attempts = 0;
+          
+          if (jenis === "sambung-setelah") {
+            // ensure not the last ayah
+            while ((usedIndices.has(r) || r === ayahs.length - 1 || ayahs[r].surah.number !== ayahs[r+1].surah.number) && attempts < 100) {
+              r = Math.floor(Math.random() * ayahs.length);
+              attempts++;
+            }
+            if (attempts >= 100) continue;
+            usedIndices.add(r);
+            
+            const qAyah = ayahs[r];
+            const correctAyah = ayahs[r+1];
+            
+            const options = [correctAyah.text];
+            let optAttempts = 0;
+            while(options.length < 4 && optAttempts < 50) {
+              const wrong = ayahs[Math.floor(Math.random() * ayahs.length)].text;
+              if (!options.includes(wrong)) options.push(wrong);
+              optAttempts++;
+            }
+
+            generatedQuestions.push({
+              id: i,
+              questionText: qAyah.text,
+              correctAnswer: correctAyah.text,
+              options: options.sort(() => Math.random() - 0.5),
+              surahName: qAyah.surah.name,
+              ayahNumber: qAyah.numberInSurah,
+            });
+          } 
+          else if (jenis === "sambung-sebelum") {
+            // ensure not the first ayah
+            while ((usedIndices.has(r) || r === 0 || ayahs[r].surah.number !== ayahs[r-1].surah.number) && attempts < 100) {
+              r = Math.floor(Math.random() * ayahs.length);
+              attempts++;
+            }
+            if (attempts >= 100) continue;
+            usedIndices.add(r);
+            
+            const qAyah = ayahs[r];
+            const correctAyah = ayahs[r-1];
+            
+            const options = [correctAyah.text];
+            let optAttempts = 0;
+            while(options.length < 4 && optAttempts < 50) {
+              const wrong = ayahs[Math.floor(Math.random() * ayahs.length)].text;
+              if (!options.includes(wrong)) options.push(wrong);
+              optAttempts++;
+            }
+
+            generatedQuestions.push({
+              id: i,
+              questionText: qAyah.text,
+              correctAnswer: correctAyah.text,
+              options: options.sort(() => Math.random() - 0.5),
+              surahName: qAyah.surah.name,
+              ayahNumber: qAyah.numberInSurah,
+            });
+          }
+          else { // tebak-surah
+            while (usedIndices.has(r) && attempts < 100) {
+              r = Math.floor(Math.random() * ayahs.length);
+              attempts++;
+            }
+            if (attempts >= 100) continue;
+            usedIndices.add(r);
+            
+            const qAyah = ayahs[r];
+            const correctSurah = qAyah.surah.name;
+            
+            const options = [correctSurah];
+            let optAttempts = 0;
+            while(options.length < 4 && optAttempts < 50) {
+              const wrong = ayahs[Math.floor(Math.random() * ayahs.length)].surah.name;
+              if (!options.includes(wrong)) options.push(wrong);
+              optAttempts++;
+            }
+
+            generatedQuestions.push({
+              id: i,
+              questionText: qAyah.text,
+              correctAnswer: correctSurah,
+              options: options.sort(() => Math.random() - 0.5),
+              surahName: correctSurah,
+              ayahNumber: qAyah.numberInSurah,
+            });
+          }
+        }
+
+        if (isMounted && generatedQuestions.length > 0) {
+          setQuestions(generatedQuestions);
+          setMode("playing");
+        } else if (isMounted) {
+          throw new Error("Gagal membuat soal");
+        }
+      } catch (error) {
+        if (isMounted) {
+          toast.error("Gagal memuat soal dari server Alquran");
+          router.push("/tes-hafalan");
         }
       }
+    };
 
-      setQuestions(generatedQuestions);
-      setMode("playing");
-    } catch (error) {
-      toast.error("Gagal memuat soal dari server Alquran");
-      router.push("/tes-hafalan");
-    }
-  };
-
-  useEffect(() => {
     handleStart();
-  }, []);
+
+    return () => {
+      isMounted = false;
+    };
+  }, [jenis, santriId, targetType, targetValue, router]);
 
   const handleAnswer = (opt: string) => {
     if (isAnswerChecked) return;
@@ -175,7 +209,8 @@ export default function QuizClient({ santris }: { santris: any[] }) {
       setMode("result");
       setIsSaving(true);
       try {
-        await saveHasilTes(santriId, jenis, score);
+        const targetString = targetType === "juz" ? `Juz ${targetValue}` : `Surah ${targetValue}`;
+        await saveHasilTes(santriId, jenis, score, targetString);
         toast.success("Hasil tes berhasil disimpan");
       } catch (e) {
         toast.error("Gagal menyimpan hasil tes");

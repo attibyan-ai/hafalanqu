@@ -1,0 +1,277 @@
+========================================
+   LAPORAN UI/UX REVIEW - hafalanqu-ui
+   Standar Web Frontend Profesional 2026
+========================================
+Tanggal: 2026-05-31
+
+========================================
+ A. ACCESSIBILITY (A11y) - 8 Issues
+========================================
+
+[UX-01] Tidak Ada Skip-to-Content Link
+  File: src/app/layout.tsx, src/app/(dashboard)/layout.tsx
+  Standar 2026: WCAG 2.2 wajib punya skip link untuk keyboard/screen reader users.
+  Tidak ada <a href="#main-content"> di layout manapun.
+  Dampak: Keyboard users harus tab melewati seluruh sidebar untuk ke konten.
+
+[UX-02] Tidak Ada aria-label pada Banyak Tombol Ikon
+  File: src/app/(dashboard)/manajemen-santri/ManajemenSantriClient.tsx (line 100)
+  src/app/(dashboard)/riwayat-hafalan/RiwayatHafalanClient.tsx (line 69)
+  Tombol <Trash2> hanya punya ikon, tidak ada aria-label atau sr-only text.
+  Dampak: Screen reader bilang "button" tanpa konteks.
+
+[UX-03] AvatarImage src="" (Empty) Tanpa alt atau aria-hidden
+  File: src/app/(dashboard)/dashboard/DashboardClient.tsx (line 154)
+  src/app/(dashboard)/manajemen-santri/ManajemenSantriClient.tsx (line 42)
+  <AvatarImage src="" /> → browser attempt load gambar kosong.
+  Harus: kalau tidak ada gambar, skip AvatarImage atau tambah aria-hidden.
+
+[UX-04] Warna Teks Tidak Lulus WCAG AA Contrast
+  File: src/styles/globals.css
+  --muted-foreground: hsl(220, 8%, 46%) ≈ #6B7280 di atas putih → ratio 4.6:1
+  Ini borderline AA untuk normal text (minimum 4.5:1).
+  Tapi dipakai di banyak tempat: subtitle, stats, filter labels.
+  Di atas abu-abu muda (#F7F8FA) → ratio turun ke ~4.2:1 = GAGAL AA.
+  Dampak: Teks sulit dibaca untuk low vision users.
+
+[UX-05] Focus Trap Tidak Konsisten di Dialog
+  File: src/components/ui/dialog.tsx (Radix default)
+  Dialog dari Radix sudah handle focus trap, TAPI:
+  - Dialog "Input Kehadiran Manual" (DaftarHadirClient line 270) pakai
+    SubmitButton dengan onClick handler di luar <form>.
+    Kalau user tekan Enter, form submission tidak trigger save.
+  Dampak: Keyboard-only users harus mouse click "Simpan".
+
+[UX-06] Tabel Kehadiran Tidak Bisa Diakses via Keyboard
+  File: src/app/(dashboard)/daftar-hadir/DaftarHadirClient.tsx (line 209)
+  <td onClick={...}> bukan interactive element.
+  Tidak ada tabIndex, role="button", atau onKeyDown handler.
+  Dampak: Keyboard users tidak bisa input kehadiran.
+
+[UX-07] Loading State Pakai blur() = Buruk untuk Accessibility
+  File: src/app/(dashboard)/loading.tsx (line 4, 8, 10)
+  `blur-[2px]` pada skeleton membuat text yang mungkin ter-render jadi tidak terbaca.
+  Standar: skeleton pakai warna solid/s shimmer, bukan blur.
+
+[UX-08] Tidak Ada Live Region untuk Notifikasi
+  File: global
+  Toast (sonner) mungkin punya aria-live, tapi tidak ada manual
+  aria-live region untuk data updates (filter berubah, data dihapus).
+  Dampak: Screen reader tidak announce perubahan data.
+
+========================================
+ B. MOBILE UX - 6 Issues
+========================================
+
+[UX-09] Matriks Kehadiran Tidak Responsif di Mobile
+  File: src/app/(dashboard)/daftar-hadir/DaftarHadirClient.tsx (line 176-243)
+  Tabel 31+ kolom (satu per hari) di layar mobile → harus scroll horizontal
+  ratusan piksel. Tidak ada alternatif view (list per santri, week view, dll).
+  Dampak: Fitur utama (kehadiran) tidak usable di HP.
+  Standar 2026: Mobile-first. Harus ada view switcher (matrix/list/calendar).
+
+[UX-10] Tabel Tes Hafalan Terlalu Lebar di Mobile
+  File: src/app/(dashboard)/tes-hafalan/TesHafalanClient.tsx (line 144-210)
+  6 kolom (Tanggal, Santri, Jenis, Benar/Salah, Durasi, Skor) + bar progress.
+  Di mobile: kolom "Benar/Salah" dan "Durasi" menampilkan placeholder "-".
+  Harus: hide kolom secondary di mobile, tampilkan di expand/detail.
+
+[UX-11] Button "Mulai Gratis" vs "Masuk" di Landing Navbar
+  File: src/app/(landing)/page.tsx (line 44-49)
+  Di mobile, "Masuk" di-hide (hidden md:inline-flex) tapi "Mulai Gratis" selalu tampil.
+  Kedua button link ke /login → redundant.
+  Tidak ada hamburger menu di mobile → nav links (#fitur, #tentang, #kontak) hilang.
+
+[UX-12] Card Hero Stat "1,248" = Hardcoded Fake Data
+  File: src/app/(landing)/page.tsx (line 102)
+  Angka "1,248" di landing page hero hardcoded, bukan dari database.
+  Untuk landing page pesantren kecil → credibility risk.
+  Harus: hapus atau ganti "XX" / gunakan real count.
+
+[UX-13] Filter Dropdown Tidak Compact di Mobile
+  File: src/app/(dashboard)/manajemen-santri/ManajemenSantriClient.tsx (line 231-254)
+  Filter "Halaqah" + "Status" di samping search → wrap di mobile tapi
+  mengambil banyak vertical space. Tidak ada collapsible filter panel.
+  Standar 2026: filter di mobile = icon button → bottom sheet/drawer.
+
+[UX-14] Mobile Navbar Labels Terlalu Panjang
+  File: src/constants/navigation.ts (line 55-81)
+  mobileNavItems labels: "Dashboard", "Hafalan", "Kehadiran", "Santri", "Lainnya"
+  "Kehadiran" (10 char) di text-[10px] → sangat kecil di mobile.
+  Standar: max 8 chars atau gunakan ikon-only + tooltip.
+
+========================================
+ C. VISUAL POLISH & DESIGN SYSTEM - 9 Issues
+========================================
+
+[UX-15] Dark Mode Didefinisikan Tapi Tidak Dipakai
+  File: tailwind.config.ts (line 4): `darkMode: ["class"]`
+  Tidak ada toggle dark mode di UI manapun.
+  CSS variables tidak punya dark variant.
+  Dampak: Tech debt. Hapus atau implementasi.
+
+[UX-16] Islamic Pattern Bukan Pola Islam yang Sebenarnya
+  File: src/styles/globals.css (line 98-100)
+  Pattern yang dipakai adalah grid "+" biasa, bukan geometric Islamic pattern.
+  Untuk app tahfidz → expectation pattern bintang 8, arabesque, atau mashrabiya.
+  Dampak: Visual identity tidak match tema Islami.
+
+[UX-17] Font Amiri Tidak Di-Load
+  File: tailwind.config.ts (line 82): `amiri: ["var(--font-amiri)", "serif"]`
+  QuizClient.tsx pakai class `font-amiri` untuk teks Arab.
+  Tapi tidak ada @font-face atau Google Fonts import untuk Amiri.
+  Dampak: Teks Arab fallback ke generic serif → tidak indah, spacing salah.
+
+[UX-18] Warna Custom "success", "warning", "info" Tidak Konsisten
+  File: tailwind.config.ts (line 67-78) vs globals.css
+  Tailwind define: success.DEFAULT, success.light, warning.DEFAULT, warning.light
+  CSS variables define: --primary, --destructive, tapi TIDAK --success, --warning
+  Dipakai langsung di className: "bg-success-light", "text-info"
+  Dampak: Tidak bisa theme-switch, tidak konsisten dengan shadcn pattern.
+
+[UX-19] Loading Skeleton Konsisten Tapi Kurang Detail
+  File: src/app/(dashboard)/loading.tsx
+  Hanya satu loading state untuk semua halaman dashboard.
+  Tidak ada per-page skeleton (misal: skeleton tabel untuk riwayat,
+  skeleton grid untuk tes hafalan).
+  Dampak: Loading feel generic, tidak match layout aktual.
+
+[UX-20] Period Selector di ChartCard = Dummy
+  File: src/components/shared/ChartCard.tsx (line 19-29)
+  showPeriodSelector=true → tampilkan dropdown "7 Hari / 30 Hari / 3 Bulan"
+  Tapi tidak ada onChange handler → tidak mengubah data chart.
+  Dampak: User expect chart berubah, nothing happens.
+
+[UX-21] StatCard Trend "dari bulan lalu" Tidak Akurat
+  File: src/components/shared/StatCard.tsx (line 38)
+  Label "dari bulan lalu" hardcoded, tapi trend calculation di dashboard.ts
+  cuma compare count bulan ini vs bulan lalu (bukan percentage change).
+  Juga: trendKualitas dan trendKehadiran = trendSetoran (bug report #06).
+  Dampak: User lihat misleading data.
+
+[UX-22] Input Hafalan Stepper Bagus Tapi Progress Bar Salah
+  File: src/app/(dashboard)/input-hafalan/InputHafalanClient.tsx (line 107)
+  `width: ${((currentStep - 1) / 2) * 100}%`
+  Step 1: width=0%, Step 2: width=50%, Step 3: width=100%
+  Tapi step 3 belum selesai saat width=100%. Harusnya:
+  Step 1: 0%, Step 2: 33%, Step 3: 66% (saat isi), 100% (saat submit).
+  Dampak: Visual progress misleading.
+
+[UX-23] Card Shadows Terlalu Subtle di Background Putih
+  File: src/styles/globals.css (line 81)
+  .card: shadow-soft, bg-white, border-gray-100/80
+  Di background #F7F8FA → card hampir tidak terlihat bedanya.
+  Standar 2026: gunakan elevation system yang lebih jelas atau
+  gunakan border yang lebih tegas (border-gray-200).
+
+========================================
+ D. UX PATTERNS & INTERACTION - 7 Issues
+========================================
+
+[UX-24] Delete Tanpa Undo atau Soft Delete
+  File: manajemen-santri, riwayat-hafalan, daftar-hadir
+  Semua delete = hard delete langsung. Ada confirmation dialog,
+  tapi setelah hapus → data hilang permanen (CASCADE).
+  Standar 2026: soft delete + undo toast (5 detik).
+
+[UX-25] Form Submit Error Tidak Scroll ke Field Error
+  File: Semua form (login, register, input-hafalan, manajemen-santri)
+  Kalau validasi gagal, error muncul di bawah field tapi user harus
+  manual scroll cari field mana yang error.
+  Standar: auto-scroll ke first error + focus field.
+
+[UX-26] Login Placeholder "admin@hafalanqu.com" = Phishing Risk
+  File: src/app/(auth)/login/page.tsx (line 84)
+  placeholder="admin@hafalanqu.com" → user mungkin think ini valid credential.
+  Standar: placeholder harus jelas "Masukkan email Anda" (bukan contoh yang valid).
+
+[UX-27] Tidak Ada Breadcrumb atau Back Navigation
+  File: Semua halaman dashboard
+  Tidak ada breadcrumb di halaman manapun. Di halaman nested seperti
+  tes-hafalan/play → user hanya punya tombol "Kembali ke Beranda Tes"
+  di halaman result, tidak di halaman quiz.
+  Standar 2026: breadcrumb di semua halaman dashboard.
+
+[UX-28] Double "Mulai Gratis" = /login di Landing Page
+  File: src/app/(landing)/page.tsx (line 47-48, 74-79)
+  Navbar "Mulai Gratis" → /login
+  Hero "Mulai Sekarang" → /login
+  Hero "Lihat Demo" → /login (bukan demo!)
+  "Lihat Demo" yang link ke /login = misleading. Harus link ke
+  demo page atau section demo inline.
+
+[UX-29] Pengaturan = Semua UI Saja, Tidak Ada Backend
+  File: src/app/(dashboard)/pengaturan/page.tsx
+  Semua switch, input, select di halaman pengaturan tidak punya state management.
+  "Simpan Pengaturan" → setTimeout → toast → data hilang di refresh.
+  "Kosongkan Semua Data" dan "Hapus Akun Saya" → tidak ada onClick.
+  Dampak: Halaman pengaturan = dead UI. Bisa menipu user.
+
+[UX-30] Export Excel/PDF Buttons = Non-Functional
+  File: src/app/(dashboard)/riwayat-hafalan/RiwayatHafalanClient.tsx (line 126-133)
+  Dua tombol "Export Excel" dan "Export PDF" tanpa onClick handler.
+  User click → nothing happens. 
+  Standar: jangan render button kalau fitur belum siap, atau
+  beri label "Segera Hadir" + disabled state.
+
+========================================
+ E. PERFORMANCE & ARCHITECTURE - 4 Issues
+========================================
+
+[UX-31] Framer Motion di Semua Komponen = Bundle Bloat
+  File: hampir semua Client component
+  framer-motion (11.15.0) di-import di 15+ file.
+  Library ini ~30KB gzipped. Untuk dashboard sederhana → overkill.
+  Alternatif 2026: CSS animations + View Transitions API sudah cukup.
+  Atau: lazy-load framer-motion hanya di halaman yang butuh.
+
+[UX-32] Dashboard Load Semua Hafalan untuk Hitung Chart
+  File: src/actions/dashboard.ts (line 23)
+  `const hafalans = await prisma.hafalan.findMany()` → load ALL records.
+  Lalu loop di JavaScript untuk hitung chart data.
+  Dampak: Kalau ada 10.000+ records → memory spike, slow response.
+  Harus: aggregate di database (GROUP BY).
+
+[UX-33] Semua Page Pakai force-dynamic
+  File: Semua page.tsx di (dashboard)
+  `export const dynamic = "force-dynamic"` → tidak ada caching.
+  Setiap page visit = full server render + DB query.
+  Standar: gunakan revalidate atau ISR untuk data yang jarang berubah.
+
+[UX-34] SearchInput Punya Double State Sync Problem
+  File: src/components/shared/SearchInput.tsx (line 16-27)
+  localValue + debouncedValue + useEffect sync parent value.
+  3 useEffect yang saling trigger → potential loop atau stale value.
+  Standar 2026: pakai useDeferredValue (React 18+) atau library
+  seperti @tanstack/react-palettes. Pattern ini fragile.
+
+========================================
+ F. MISSING STANDARD FEATURES (2026)
+========================================
+
+[UX-35] Tidak Ada Dark Mode Toggle
+  Expektasi user 2026: dark mode di setiap web app.
+  Tailwind sudah siap (darkMode: ["class"]) tapi tidak diimplementasi.
+
+[UX-36] Tidak Ada Notifikasi Center
+  File: global
+  Tidak ada bell icon / notification dropdown.
+  Untuk app manajemen → penting untuk notifikasi:
+  "Santri X belum setor hari ini", "Tes selesai", dll.
+
+[UX-37] Tidak Ada Quick Actions / Command Palette
+  Standar 2026: Cmd+K untuk quick search / navigate.
+  Tidak ada keyboard shortcut sama sekali.
+  Power users (ustadz yang sering input) butuh fast navigation.
+
+[UX-38] Tidak Ada Onboarding Flow
+  File: global
+  Setelah register → langsung ke dashboard kosong tanpa guidance.
+  Tidak ada empty state yang guide user: "Mulai dengan menambah santri".
+  DashboardClient ada empty state tapi tidak actionable (no CTA button).
+
+[UX-39] Tidak Ada Responsive Typography Scale
+  File: tailwind.config.ts (line 84-95)
+  Custom fontSize di-define tapi tidak ada responsive adjustment.
+  text-display (3rem) di mobile → terlalu besar.
+  Harus: gunakan clamp() atau responsive modifier.

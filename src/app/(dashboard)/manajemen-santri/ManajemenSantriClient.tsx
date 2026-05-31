@@ -156,8 +156,8 @@ export default function ManajemenSantriClient({ initialData }: { initialData: Sa
       await createSantri({
         nama: data.nama,
         nis: data.nis,
-        kelas: data.halaqah,
-        target: parseInt(data.targetJuz),
+        halaqah: data.halaqah,
+        targetJuz: parseInt(data.targetJuz),
       });
       toast.success("Data santri berhasil ditambahkan");
       setIsAddOpen(false);

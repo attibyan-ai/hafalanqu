@@ -123,11 +123,11 @@ export default function RiwayatHafalanClient({ initialData }: { initialData: any
         title="Riwayat Hafalan" 
         subtitle="Lihat dan kelola seluruh riwayat setoran hafalan santri"
       >
-        <Button variant="outline" className="hidden sm:flex">
+        <Button variant="outline" className="hidden sm:flex" onClick={() => toast.success("Fitur Export Excel akan segera hadir")}>
           <Download className="w-4 h-4 mr-2" />
           Export Excel
         </Button>
-        <Button>
+        <Button onClick={() => toast.success("Fitur Export PDF akan segera hadir")}>
           <Download className="w-4 h-4 mr-2" />
           Export PDF
         </Button>

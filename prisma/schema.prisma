@@ -14,6 +14,8 @@ model User {
   password  String
   role      String   @default("ustadz") // admin, ustadz
   avatar    String?
+  noHp      String?
+  alamat    String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -22,9 +24,12 @@ model Santri {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
   nama      String
   nis       String   @unique
-  kelas     String
+  halaqah   String
   status    String   @default("active") // active, inactive
-  target    Int      @default(30)       // target juz
+  targetJuz Int      @default(30)
+  noHp      String?
+  alamat    String?
+  avatar    String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -53,7 +58,7 @@ model Kehadiran {
   santriId  String   @db.ObjectId
   santri    Santri   @relation(fields: [santriId], references: [id], onDelete: Cascade)
   tanggal   DateTime
-  status    String   // hadir, sakit, izin, alfa
+  status    String   // hadir, sakit, izin, udzur, alfa
   catatan   String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

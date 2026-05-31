@@ -173,8 +173,8 @@ export default function InputHafalanClient({ initialSantris }: { initialSantris:
                         <SelectValue placeholder="Pilih jenis..." />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="Ziyadah">Ziyadah (Hafalan Baru)</SelectItem>
-                        <SelectItem value="Muraja'ah">Muraja'ah (Pengulangan)</SelectItem>
+                        <SelectItem value="ziyadah">Ziyadah (Hafalan Baru)</SelectItem>
+                        <SelectItem value="murajaah">Muraja'ah (Pengulangan)</SelectItem>
                       </SelectContent>
                     </Select>
                   </FormField>
@@ -220,11 +220,11 @@ export default function InputHafalanClient({ initialSantris }: { initialSantris:
                       <SelectValue placeholder="Pilih kualitas..." />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="Mumtaz">Mumtaz (Sangat Baik)</SelectItem>
-                      <SelectItem value="Jayyid Jiddan">Jayyid Jiddan (Baik Sekali)</SelectItem>
-                      <SelectItem value="Jayyid">Jayyid (Baik)</SelectItem>
-                      <SelectItem value="Maqbul">Maqbul (Cukup)</SelectItem>
-                      <SelectItem value="Ghair Maqbul">Ghair Maqbul (Kurang)</SelectItem>
+                      <SelectItem value="mumtaz">Mumtaz (Sangat Baik)</SelectItem>
+                      <SelectItem value="jayyid-jiddan">Jayyid Jiddan (Baik Sekali)</SelectItem>
+                      <SelectItem value="jayyid">Jayyid (Baik)</SelectItem>
+                      <SelectItem value="maqbul">Maqbul (Cukup)</SelectItem>
+                      <SelectItem value="ghair-maqbul">Ghair Maqbul (Kurang)</SelectItem>
                     </SelectContent>
                   </Select>
                 </FormField>

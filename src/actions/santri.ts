@@ -1,9 +1,9 @@
 "use server";
 
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
-
-const prisma = new PrismaClient();
+import { checkAuth } from "@/lib/checkAuth";
+import { z } from "zod";
 
 export async function getSantris() {
   const santris = await prisma.santri.findMany({
@@ -14,27 +14,38 @@ export async function getSantris() {
   });
 
   return santris.map((s) => {
-    // Simplification for progress: sum of unique juz completed?
-    // Let's just mock progress based on hafalans count for now.
-    const progressJuz = Math.min(Math.floor(s.hafalans.length / 5), s.target);
+    const totalAyat = s.hafalans.reduce((sum, h) => sum + Math.max(0, h.ayatAkhir - h.ayatMulai + 1), 0);
+    const progressJuz = Math.min(Math.floor(totalAyat / 140), s.targetJuz);
     return {
       ...s,
       progressJuz,
-      targetJuz: s.target,
-      halaqah: s.kelas, // map kelas to halaqah for UI
-      noHp: "-", // mock
+      targetJuz: s.targetJuz,
+      halaqah: s.halaqah,
+      noHp: s.noHp || "-",
+      alamat: s.alamat || "-",
+      avatar: s.avatar || "",
     };
   });
 }
 
-export async function createSantri(data: { nama: string; nis: string; kelas: string; target: number }) {
+const santriSchema = z.object({
+  nama: z.string().min(3),
+  nis: z.string().min(3),
+  halaqah: z.string().min(1),
+  targetJuz: z.number().min(1).max(30),
+});
+
+export async function createSantri(data: { nama: string; nis: string; halaqah: string; targetJuz: number }) {
+  await checkAuth();
+  const parsed = santriSchema.parse(data);
   await prisma.santri.create({
-    data,
+    data: parsed,
   });
   revalidatePath("/manajemen-santri");
 }
 
-export async function updateSantri(id: string, data: { nama?: string; kelas?: string; target?: number; status?: string }) {
+export async function updateSantri(id: string, data: { nama?: string; halaqah?: string; targetJuz?: number; status?: string }) {
+  await checkAuth();
   await prisma.santri.update({
     where: { id },
     data,
@@ -43,6 +54,7 @@ export async function updateSantri(id: string, data: { nama?: string; kelas?: st
 }
 
 export async function deleteSantri(id: string) {
+  await checkAuth();
   await prisma.santri.delete({
     where: { id },
   });

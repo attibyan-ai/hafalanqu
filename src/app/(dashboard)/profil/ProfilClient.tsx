@@ -14,6 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { getInitials, getRoleBadgeColor, getRoleLabel, formatDate } from "@/lib/utils";
+import { updateProfile, updatePassword } from "@/actions/profil";
 
 const profileSchema = z.object({
   nama: z.string().min(3, "Nama minimal 3 karakter"),
@@ -40,8 +41,8 @@ export default function ProfilClient({ user }: { user: any }) {
     defaultValues: {
       nama: user?.name || "",
       email: user?.email || "",
-      noHp: "",
-      alamat: "",
+      noHp: user?.noHp || "",
+      alamat: user?.alamat || "",
     }
   });
 
@@ -51,17 +52,27 @@ export default function ProfilClient({ user }: { user: any }) {
 
   const onSubmitProfile = async (data: any) => {
     setIsSubmittingProfile(true);
-    await new Promise(r => setTimeout(r, 1000));
-    toast.success("Fitur update profil akan segera hadir");
-    setIsSubmittingProfile(false);
+    try {
+      await updateProfile(data);
+      toast.success("Profil berhasil diperbarui");
+    } catch (e) {
+      toast.error("Gagal memperbarui profil");
+    } finally {
+      setIsSubmittingProfile(false);
+    }
   };
 
   const onSubmitPassword = async (data: any) => {
     setIsSubmittingPassword(true);
-    await new Promise(r => setTimeout(r, 1000));
-    toast.success("Fitur update password akan segera hadir");
-    formPassword.reset();
-    setIsSubmittingPassword(false);
+    try {
+      await updatePassword(data.oldPassword, data.newPassword);
+      toast.success("Password berhasil diubah");
+      formPassword.reset();
+    } catch (e: any) {
+      toast.error(e.message || "Gagal mengubah password");
+    } finally {
+      setIsSubmittingPassword(false);
+    }
   };
 
   return (

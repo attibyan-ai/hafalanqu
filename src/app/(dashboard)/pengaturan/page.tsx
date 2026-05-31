@@ -20,7 +20,7 @@ export default function PengaturanPage() {
   const handleSave = async () => {
     setIsSubmitting(true);
     await new Promise(r => setTimeout(r, 1000));
-    toast.success("Pengaturan berhasil disimpan");
+    toast.success("Fitur pengaturan akan segera hadir");
     setIsSubmitting(false);
   };
 
@@ -231,8 +231,8 @@ export default function PengaturanPage() {
         <p className="text-sm text-muted-foreground mb-6">Aksi di bawah ini bersifat permanen dan tidak dapat dibatalkan.</p>
         
         <div className="flex flex-col sm:flex-row gap-4">
-          <Button variant="destructive" className="bg-red-600 hover:bg-red-700">Kosongkan Semua Data</Button>
-          <Button variant="outline" className="text-destructive border-red-200 hover:bg-red-50 hover:text-red-700">Hapus Akun Saya</Button>
+          <Button variant="destructive" className="bg-red-600 hover:bg-red-700" onClick={() => toast.success("Fitur ini sedang dinonaktifkan")}>Kosongkan Semua Data</Button>
+          <Button variant="outline" className="text-destructive border-red-200 hover:bg-red-50 hover:text-red-700" onClick={() => toast.success("Fitur hapus akun sedang dinonaktifkan")}>Hapus Akun Saya</Button>
         </div>
       </div>
     </motion.div>

@@ -1,9 +1,8 @@
 "use server";
 
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
-
-const prisma = new PrismaClient();
+import { checkAuth } from "@/lib/checkAuth";
 
 export async function getKehadirans(limit = 500) {
   return await prisma.kehadiran.findMany({
@@ -16,6 +15,7 @@ export async function getKehadirans(limit = 500) {
 }
 
 export async function setKehadiran(santriId: string, tanggalStr: string, status: string) {
+  await checkAuth();
   // Use YYYY-MM-DD string to ensure date is parsed as UTC midnight
   const targetDate = new Date(tanggalStr);
 
@@ -49,6 +49,7 @@ export async function setKehadiran(santriId: string, tanggalStr: string, status:
 }
 
 export async function deleteKehadiran(santriId: string, tanggalStr: string) {
+  await checkAuth();
   const targetDate = new Date(tanggalStr);
   const existing = await prisma.kehadiran.findFirst({
     where: {

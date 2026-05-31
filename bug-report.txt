@@ -1,0 +1,171 @@
+========================================
+       LAPORAN BUG - hafalanqu-ui
+========================================
+Tanggal: 2026-05-31
+
+========================================
+ CRITICAL (4)
+========================================
+
+[BUG-01] Prisma Client Bukan Singleton
+  File: src/actions/auth.ts, dashboard.ts, hafalan.ts, kehadiran.ts, santri.ts, tes.ts, lib/auth.ts
+  Setiap file bikin `const prisma = new PrismaClient()` sendiri.
+  Harusnya pakai satu instance global (singleton pattern).
+  Dampak: Di dev mode (hot reload), setiap save file bikin koneksi baru
+  → connection pool exhaustion → crash atau hang.
+  Fix: Buat src/lib/prisma.ts dengan:
+    const globalForPrisma = globalThis as unknown as { prisma: PrismaClient };
+    export const prisma = globalForPrisma.prisma || new PrismaClient();
+    if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
+
+[BUG-02] Schema Prisma vs Database Mismatch
+  File: prisma/schema.prisma (line 6)
+  Schema tulis `provider = "mongodb"` tapi ada file `prisma/dev.db` (SQLite).
+  Dampak: Build/deploy bisa gagal atau connect ke DB salah.
+
+[BUG-03] TypeScript Types vs Prisma Schema Tidak Cocok
+  File: src/types/index.ts vs prisma/schema.prisma
+  Interface `Santri` punya: halaqah, noHp, alamat, avatar, targetJuz, progressJuz, joinedAt
+  Prisma model cuma punya: nama, nis, kelas, status, target, createdAt, updatedAt
+  Dampak: Data yang dikirim ke client component missing fields → tampil "-" atau undefined.
+  Code di actions/santri.ts pakai workaround (mock noHp: "-", map kelas→halaqah)
+  tapi fragile dan mudah pecah.
+
+[BUG-04] Middleware Tidak Protect /daftar-hadir
+  File: src/middleware.ts (line 10-18)
+  Matcher: "/dashboard/:path*", "/input-hafalan/:path*", "/manajemen-santri/:path*"
+           "/pengaturan/:path*", "/profil/:path*", "/riwayat-hafalan/:path*"
+           "/tes-hafalan/:path*"
+  MISSING: "/daftar-hadir/:path*"
+  Dampak: Halaman daftar hadir bisa diakses tanpa login.
+
+========================================
+ HIGH (6)
+========================================
+
+[BUG-05] Kualitas Color Mapping Selalu Default (Gray)
+  File: src/app/(dashboard)/input-hafalan/InputHafalanClient.tsx (line 222-228)
+  vs src/lib/utils.ts (line 43-52)
+  Form kirim: "Jayyid Jiddan", "Ghair Maqbul" (PascalCase, spasi)
+  Utils expect: "jayyid-jiddan", "ghair-maqbul" (lowercase, dash)
+  Dampak: Badge kualitas di riwayat-hafalan warnanya gray semua (fallback).
+
+[BUG-06] Dashboard Trend Kualitas & Kehadiran Salah
+  File: src/actions/dashboard.ts (line 183-184)
+  `trendKualitas: trendSetoran` dan `trendKehadiran: trendSetoran`
+  Kedua trend ini seharusnya hitung dari data kualitas/kehadiran,
+  bukan disamakan dengan trend setoran.
+  Dampak: Stat card "Rata-rata Kualitas" dan "Kehadiran" tunjukkan trend palsu.
+
+[BUG-07] Tes Hafalan Target Selalu "Juz 30"
+  File: src/actions/tes.ts (line 25)
+  `target: "Juz 30"` hardcoded.
+  User bisa pilih Juz 1-30 atau Surah tertentu di TesHafalanClient,
+  tapi hasil tes yang disimpan selalu "Juz 30".
+  Dampak: Data tes di database salah target.
+
+[BUG-08] QuizClient - Infinite Loop Risk + Unhandled Error
+  File: src/app/(dashboard)/tes-hafalan/play/QuizClient.tsx
+  Line 154-156: useEffect(() => { handleStart(); }, [])
+  handleStart pakai closure variables (santriId, targetType, targetValue)
+  yang bisa berubah. Kalau API error, `data.data.ayahs` bisa undefined
+  → crash di line 61.
+  Juga: while loop di line 71/97 bisa infinite kalau ayahs.length kecil
+  atau semua index sudah dipakai.
+
+[BUG-09] Hafalan Jenis "Muraja'ah" Tidak Match di Dashboard Chart
+  File: src/actions/dashboard.ts (line 127-132) vs InputHafalanClient.tsx (line 177)
+  Input form kirim: "Muraja'ah" (dengan apostrof + capital M)
+  Dashboard check: `h.jenis.toLowerCase()` → "muraja'ah"
+  Tapi chart key pakai: "murajaah" (tanpa apostrof)
+  Dampak: Data murajaah tidak masuk chart, semua jadi ziyadah di chart.
+
+[BUG-10] DaftarHadir - "udzur" Status Tidak Ada di Prisma Schema
+  File: src/app/(dashboard)/daftar-hadir/DaftarHadirClient.tsx (line 288)
+  UI punya opsi "udzur" tapi Prisma schema Kehadiran.status
+  cuma comment: // hadir, sakit, izin, alfa
+  Dampak: Bisa simpan "udzur" ke DB tapi tidak konsisten dengan desain.
+  Stats di line 69 hitung "udzur" tapi mungkin tidak pernah muncul.
+
+========================================
+ MEDIUM (7)
+========================================
+
+[BUG-11] Register Terbuka Tanpa Kontrol
+  File: src/app/(auth)/register/page.tsx + src/actions/auth.ts
+  Siapa saja bisa register → langsung dapat role "ustadz" → akses dashboard.
+  Tidak ada captcha, email verification, atau admin approval.
+  Dampak: Security risk untuk aplikasi pesantren.
+
+[BUG-12] Server Actions Tanpa Auth Check
+  File: Semua src/actions/*.ts
+  createHafalan, deleteSantri, setKehadiran, dll tidak cek session/auth.
+  Siapa pun yang bisa hit server action bisa manipulate data.
+  Dampak: Bypass auth di daftar-hadir (BUG-04) bisa dipakai hapus data.
+
+[BUG-13] Server Actions Tanpa Input Validation
+  File: src/actions/hafalan.ts, santri.ts, kehadiran.ts
+  createHafalan tidak validasi ayatMulai > 0, ayatAkhir >= ayatMulai, dll.
+  createSantri tidak validasi format NIS.
+  Dampak: Data sampah masuk database.
+
+[BUG-14] Export Excel/PDF = Tombol Kosong
+  File: src/app/(dashboard)/riwayat-hafalan/RiwayatHafalanClient.tsx (line 126-133)
+  Tombol "Export Excel" dan "Export PDF" tidak punya onClick handler.
+  Dampak: User click → nothing happens. False affordance.
+
+[BUG-15] Profil & Password Update = Fake
+  File: src/app/(dashboard)/profil/ProfilClient.tsx (line 52-65)
+  onSubmitProfile dan onSubmitPassword cuma `await new Promise(r => setTimeout(r, 1000))`
+  lalu toast "Fitur akan segera hadir".
+  Dampak: User think berhasil tapi data tidak tersimpan.
+
+[BUG-16] Pengaturan Tidak Persist
+  File: src/app/(dashboard)/pengaturan/page.tsx (line 20-25)
+  handleSave cuma setTimeout 1 detik → toast "berhasil".
+  Semua switch/input di halaman pengaturan tidak punya state management.
+  Dampak: Refresh page → semua setting hilang.
+
+[BUG-17] useEffect Cleanup Missing untuk Async
+  File: src/app/(dashboard)/tes-hafalan/play/QuizClient.tsx (line 154-156)
+  useEffect(() => { handleStart(); }, []) tidak handle cleanup.
+  Kalau component unmount sebelum fetch selesai → setState on unmounted component.
+
+========================================
+ LOW (6)
+========================================
+
+[BUG-18] Seed di Build Script = Bahaya di Production
+  File: package.json (line 7)
+  "build": "prisma db push && prisma generate && tsx prisma/seed.ts && next build"
+  Seed jalan tiap build → admin@hafalanqu.com selalu di-upsert,
+  password di-reset ke "admin123" kalau update dipanggil.
+  Dampak: Di production, admin password bisa ter-reset otomatis.
+
+[BUG-19] Hardcoded Credential di Seed
+  File: prisma/seed.ts (line 7)
+  Password "admin123" hardcoded.
+  Dampak: Semua orang yang lihat source code tahu password admin.
+
+[BUG-20] Progress Santri = Mock/Hack
+  File: src/actions/santri.ts (line 19)
+  `progressJuz = Math.min(Math.floor(s.hafalans.length / 5), s.target)`
+  Progress dihitung dari jumlah hafalan ÷ 5, bukan dari juz yang benar-benar hafal.
+  Dampak: Data progress misleading.
+
+[BUG-21] Rounding Error di Kualitas Chart
+  File: src/actions/dashboard.ts (line 146-148)
+  `item.value = Math.round((item.value / totalKualitas) * 100)`
+  Setiap item di-round individual → total bisa 99% atau 101%.
+  Dampak: Pie chart visual slightly off.
+
+[BUG-22] Danger Zone Buttons Tanpa Handler
+  File: src/app/(dashboard)/pengaturan/page.tsx (line 234-235)
+  "Kosongkan Semua Data" dan "Hapus Akun Saya" tidak punya onClick.
+  Dampak: User click → nothing happens. Confusing UX.
+
+[BUG-23] Week Chart Selalu Full Week (Termasuk Masa Depan)
+  File: src/actions/dashboard.ts (line 106-114, 174)
+  Chart selalu tampilkan Min-Sen (7 hari), tapi tidak filter minggu ini saja.
+  Semua data dari semua waktu di-group by day-of-week.
+  Dampak: Chart tidak akurat untuk "Tren Hafalan Mingguan".

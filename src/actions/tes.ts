@@ -1,9 +1,8 @@
 "use server";
 
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
-
-const prisma = new PrismaClient();
+import { checkAuth } from "@/lib/checkAuth";
 
 export async function getRecentTes(limit = 10) {
   return await prisma.tes.findMany({
@@ -15,14 +14,15 @@ export async function getRecentTes(limit = 10) {
   });
 }
 
-export async function saveHasilTes(santriId: string, jenis: string, nilai: number) {
+export async function saveHasilTes(santriId: string, jenis: string, nilai: number, target: string) {
+  await checkAuth();
   const tes = await prisma.tes.create({
     data: {
       santriId,
       jenis,
       nilai,
       tanggal: new Date(),
-      target: "Juz 30",
+      target: target,
       penguji: "Sistem Otomatis",
       status: nilai >= 70 ? "lulus" : "mengulang",
     }

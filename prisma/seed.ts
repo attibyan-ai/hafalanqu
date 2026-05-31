@@ -4,7 +4,8 @@ import bcrypt from 'bcryptjs'
 const prisma = new PrismaClient()
 
 async function main() {
-  const password = await bcrypt.hash('admin123', 10)
+  const adminPassword = process.env.ADMIN_PASSWORD || 'admin123';
+  const password = await bcrypt.hash(adminPassword, 10)
 
   const admin = await prisma.user.upsert({
     where: { email: 'admin@hafalanqu.com' },
