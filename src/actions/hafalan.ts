@@ -6,6 +6,7 @@ import { checkAuth } from "@/lib/checkAuth";
 import { z } from "zod";
 
 export async function getRecentHafalan(limit = 10) {
+  await checkAuth();
   return await prisma.hafalan.findMany({
     take: limit,
     orderBy: { createdAt: "desc" },

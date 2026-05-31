@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowRight, ArrowLeft, HelpCircle, Shuffle, ChevronRight } from "lucide-react";
+import { ArrowRight, ArrowLeft, HelpCircle, ChevronRight } from "lucide-react";
 import { formatDateShort } from "@/lib/utils";
 
 const testTypes = [
@@ -36,14 +36,6 @@ const testTypes = [
     icon: HelpCircle,
     color: "from-purple-500 to-purple-700",
     bgLight: "bg-purple-50 text-purple-600"
-  },
-  {
-    id: "susun-ulang",
-    title: "Susun Ulang Ayat",
-    desc: "Susun ayat dalam urutan yang benar",
-    icon: Shuffle,
-    color: "from-amber-500 to-amber-700",
-    bgLight: "bg-amber-50 text-amber-600"
   }
 ];
 

@@ -78,7 +78,7 @@ const columns = (onDelete: (id: string) => void): ColumnDef<SantriData>[] => [
     header: "Progress Hafalan",
     cell: ({ row }) => {
       const { progressJuz, targetJuz } = row.original;
-      const percentage = Math.round((progressJuz / targetJuz) * 100);
+      const percentage = targetJuz > 0 ? Math.round((progressJuz / targetJuz) * 100) : 0;
       return (
         <div className="flex items-center gap-3 min-w-[150px]">
           <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">

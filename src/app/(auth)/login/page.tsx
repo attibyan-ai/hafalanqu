@@ -11,7 +11,7 @@ import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { FormField } from "@/components/shared/FormField";
-import Link from "next/link";
+
 
 const loginSchema = z.object({
   email: z.string().email("Format email tidak valid"),
@@ -112,10 +112,7 @@ export default function LoginPage() {
         </Button>
 
         <p className="text-center text-sm text-muted-foreground mt-4">
-          Belum punya akun?{" "}
-          <Link href="/register" className="text-primary font-medium hover:underline">
-            Daftar di sini
-          </Link>
+          Hubungi administrator untuk membuat akun baru.
         </p>
       </form>
     </div>

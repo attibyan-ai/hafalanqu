@@ -62,7 +62,7 @@ export default function QuizClient({ santris }: { santris: any[] }) {
         
         const res = await fetch(endpoint);
         const data = await res.json();
-        const ayahs = targetType === "juz" ? data.data.ayahs : data.data.ayahs;
+        const ayahs = data.data.ayahs;
 
         if (!ayahs || ayahs.length === 0) {
           throw new Error("Data ayat kosong");

@@ -1,14 +1,18 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
+import { checkAuth } from "@/lib/checkAuth";
 
 export async function getDashboardStats() {
+  await checkAuth();
+
   const totalSantri = await prisma.santri.count({
     where: { status: "active" },
   });
 
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+  // Use consistent UTC midnight boundaries
+  const now = new Date();
+  const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
 
   const setoranHariIni = await prisma.hafalan.count({
     where: {
@@ -18,7 +22,19 @@ export async function getDashboardStats() {
     },
   });
 
-  const hafalans = await prisma.hafalan.findMany();
+  // Only load current month + last month hafalans instead of ALL records
+  const startOfThisMonth = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
+  const startOfLastMonth = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 1, 1));
+
+  const hafalans = await prisma.hafalan.findMany({
+    where: {
+      createdAt: {
+        gte: startOfLastMonth,
+      },
+    },
+  });
+
+  // Rata-rata kualitas (consistent matching: check longer strings first)
   let mumtazCount = 0;
   hafalans.forEach((h) => {
     const kualitas = h.kualitas.toLowerCase();
@@ -37,7 +53,6 @@ export async function getDashboardStats() {
     },
   });
   
-  // A santri is present if they have a 'hadir' status in Kehadirans OR they have a hafalan today.
   const hadirSet = new Set<string>();
   
   kehadirans.forEach(k => {
@@ -74,19 +89,17 @@ export async function getDashboardStats() {
   })));
 
   const santris = await prisma.santri.findMany({
+    where: { status: "active" },
     include: { hafalans: true }
   });
 
   const topSantri = santris
     .map(s => {
-      // Calculate total ayat memorized
       const totalAyat = s.hafalans.reduce((sum, h) => {
-        // Calculate ayat diff: (ayatAkhir - ayatMulai) + 1
         const ayatCount = Math.max(0, h.ayatAkhir - h.ayatMulai + 1);
         return sum + ayatCount;
       }, 0);
 
-      // Score can be based on total ayat * 10 or similar
       const skor = totalAyat * 10;
 
       return {
@@ -100,7 +113,7 @@ export async function getDashboardStats() {
     .slice(0, 5)
     .map((s, idx) => ({ ...s, rank: idx + 1 }));
 
-  // Calculate real chart data
+  // Chart data
   const hafalanChartData = [
     { name: 'Min', ziyadah: 0, murajaah: 0 },
     { name: 'Sen', ziyadah: 0, murajaah: 0 },
@@ -120,16 +133,17 @@ export async function getDashboardStats() {
   ];
 
   const startOfWeek = new Date(today);
-  startOfWeek.setDate(today.getDate() - today.getDay() + (today.getDay() === 0 ? -6 : 1)); // Monday
-  startOfWeek.setHours(0,0,0,0);
+  // Adjust to Monday: getUTCDay() 0=Sun, 1=Mon, ...
+  const utcDay = today.getUTCDay();
+  startOfWeek.setUTCDate(today.getUTCDate() - utcDay + (utcDay === 0 ? -6 : 1));
   const endOfWeek = new Date(startOfWeek);
-  endOfWeek.setDate(startOfWeek.getDate() + 6);
-  endOfWeek.setHours(23,59,59,999);
+  endOfWeek.setUTCDate(startOfWeek.getUTCDate() + 6);
+  endOfWeek.setUTCHours(23, 59, 59, 999);
 
   hafalans.forEach((h) => {
     // 1. Fill hafalanChartData (only for current week)
     if (h.tanggal >= startOfWeek && h.tanggal <= endOfWeek) {
-      const day = h.tanggal.getDay(); // 0 is Sunday
+      const day = h.tanggal.getUTCDay(); // 0=Sun, mapped to chart index 0
       const jenis = h.jenis.toLowerCase();
       if (jenis === "ziyadah") {
         hafalanChartData[day].ziyadah += 1;
@@ -138,7 +152,7 @@ export async function getDashboardStats() {
       }
     }
 
-    // 2. Fill kualitasChartData
+    // 2. Fill kualitasChartData (check longer strings first to avoid partial match)
     const kualitas = h.kualitas.toLowerCase();
     if (kualitas === "mumtaz") kualitasChartData[0].value += 1;
     else if (kualitas === "jayyid-jiddan" || kualitas === "jayyid jiddan") kualitasChartData[1].value += 1;
@@ -147,7 +161,7 @@ export async function getDashboardStats() {
     else kualitasChartData[4].value += 1;
   });
 
-  // 3. Convert kualitasChartData to percentages with remainder distribution
+  // 3. Convert kualitasChartData to percentages
   const totalKualitas = kualitasChartData.reduce((acc, curr) => acc + curr.value, 0);
   if (totalKualitas > 0) {
     let exactVals = kualitasChartData.map(item => (item.value / totalKualitas) * 100);
@@ -166,11 +180,7 @@ export async function getDashboardStats() {
     });
   }
 
-  // Calculate Trends (comparing this month to last month)
-  const startOfThisMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-  const startOfLastMonth = new Date(today.getFullYear(), today.getMonth() - 1, 1);
-
-  // 1. Trend Santri (just new santris this month vs last month)
+  // Trends
   const newSantriThisMonth = await prisma.santri.count({
     where: { createdAt: { gte: startOfThisMonth } }
   });
@@ -179,7 +189,6 @@ export async function getDashboardStats() {
   });
   const trendSantri = newSantriLastMonth === 0 ? (newSantriThisMonth > 0 ? 100 : 0) : Math.round(((newSantriThisMonth - newSantriLastMonth) / newSantriLastMonth) * 100);
 
-  // 2. Trend Setoran
   const setoranThisMonth = await prisma.hafalan.count({
     where: { createdAt: { gte: startOfThisMonth } }
   });
@@ -188,17 +197,16 @@ export async function getDashboardStats() {
   });
   const trendSetoran = setoranLastMonth === 0 ? (setoranThisMonth > 0 ? 100 : 0) : Math.round(((setoranThisMonth - setoranLastMonth) / setoranLastMonth) * 100);
 
-  // 3. Trend Kualitas
   const hafalansThisMonth = hafalans.filter(h => h.createdAt >= startOfThisMonth);
   const hafalansLastMonth = hafalans.filter(h => h.createdAt >= startOfLastMonth && h.createdAt < startOfThisMonth);
-  const ratKualitasThis = hafalansThisMonth.length > 0 ? hafalansThisMonth.filter(h => h.kualitas.toLowerCase().includes("mumtaz") || h.kualitas.toLowerCase().includes("jayyid jiddan") || h.kualitas.toLowerCase().includes("jayyid-jiddan")).length / hafalansThisMonth.length : 0;
-  const ratKualitasLast = hafalansLastMonth.length > 0 ? hafalansLastMonth.filter(h => h.kualitas.toLowerCase().includes("mumtaz") || h.kualitas.toLowerCase().includes("jayyid jiddan") || h.kualitas.toLowerCase().includes("jayyid-jiddan")).length / hafalansLastMonth.length : 0;
+  const isGood = (k: string) => k === "mumtaz" || k === "jayyid jiddan" || k === "jayyid-jiddan";
+  const ratKualitasThis = hafalansThisMonth.length > 0 ? hafalansThisMonth.filter(h => isGood(h.kualitas.toLowerCase())).length / hafalansThisMonth.length : 0;
+  const ratKualitasLast = hafalansLastMonth.length > 0 ? hafalansLastMonth.filter(h => isGood(h.kualitas.toLowerCase())).length / hafalansLastMonth.length : 0;
   const trendKualitas = ratKualitasLast === 0 ? (ratKualitasThis > 0 ? 100 : 0) : Math.round(((ratKualitasThis - ratKualitasLast) / ratKualitasLast) * 100);
 
-  // 4. Trend Kehadiran (approximate by hafalans)
-  const trendKehadiran = trendSetoran; // It requires complex cross-joining Kehadirans and Hafalans by day which is too expensive. We fallback to setoran trend.
+  const trendKehadiran = trendSetoran;
 
-  // Reorder chart data to start from Monday to Sunday
+  // Reorder chart data: shift Sunday (index 0) to end → Mon-Sun
   const shiftedHafalanChart = [...hafalanChartData.slice(1), hafalanChartData[0]];
 
   return {

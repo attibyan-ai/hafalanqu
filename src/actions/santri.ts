@@ -6,6 +6,7 @@ import { checkAuth } from "@/lib/checkAuth";
 import { z } from "zod";
 
 export async function getSantris() {
+  await checkAuth();
   const santris = await prisma.santri.findMany({
     orderBy: { createdAt: "desc" },
     include: {
@@ -44,11 +45,19 @@ export async function createSantri(data: { nama: string; nis: string; halaqah: s
   revalidatePath("/manajemen-santri");
 }
 
+const updateSantriSchema = z.object({
+  nama: z.string().min(3).optional(),
+  halaqah: z.string().min(1).optional(),
+  targetJuz: z.number().min(1).max(30).optional(),
+  status: z.string().optional(),
+});
+
 export async function updateSantri(id: string, data: { nama?: string; halaqah?: string; targetJuz?: number; status?: string }) {
   await checkAuth();
+  const parsed = updateSantriSchema.parse(data);
   await prisma.santri.update({
     where: { id },
-    data,
+    data: parsed,
   });
   revalidatePath("/manajemen-santri");
 }

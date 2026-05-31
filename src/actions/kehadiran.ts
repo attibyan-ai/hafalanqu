@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { checkAuth } from "@/lib/checkAuth";
 
 export async function getKehadirans(limit = 500) {
+  await checkAuth();
   return await prisma.kehadiran.findMany({
     take: limit,
     orderBy: { createdAt: "desc" },

@@ -24,7 +24,7 @@ model Santri {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
   nama      String
   nis       String   @unique
-  halaqah   String
+  halaqah   String   @default("Umum")
   status    String   @default("active") // active, inactive
   targetJuz Int      @default(30)
   noHp      String?

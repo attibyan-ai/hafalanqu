@@ -4,13 +4,14 @@ export interface Santri {
   nama: string;
   nis: string;
   halaqah: string;
-  noHp: string;
-  alamat: string;
+  noHp?: string;
+  alamat?: string;
   avatar?: string;
   targetJuz: number;
   progressJuz: number;
-  joinedAt: string;
   status: "active" | "inactive";
+  createdAt: string;
+  updatedAt: string;
 }
 
 // ─── Hafalan ───
@@ -30,10 +31,11 @@ export interface Hafalan {
   kualitas: KualitasHafalan;
   catatan?: string;
   createdAt: string;
+  updatedAt: string;
 }
 
 // ─── Attendance ───
-export type StatusKehadiran = "hadir" | "izin" | "sakit" | "alpha";
+export type StatusKehadiran = "hadir" | "izin" | "sakit" | "udzur" | "alpha";
 
 export interface AttendanceRecord {
   santriId: string;
@@ -49,7 +51,7 @@ export interface AttendanceMatrix {
 }
 
 // ─── Test ───
-export type JenisTes = "sambung-setelah" | "sambung-sebelum" | "tebak-surah" | "susun-ulang";
+export type JenisTes = "sambung-setelah" | "sambung-sebelum" | "tebak-surah";
 
 export interface TesSetting {
   jenis: JenisTes;
@@ -73,17 +75,18 @@ export interface HasilTes {
 }
 
 // ─── User / Profile ───
-export type UserRole = "super-admin" | "admin" | "ustadz";
+export type UserRole = "admin" | "ustadz";
 
 export interface User {
   id: string;
   nama: string;
   email: string;
-  noHp: string;
-  alamat: string;
+  noHp?: string;
+  alamat?: string;
   role: UserRole;
   avatar?: string;
-  joinedAt: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 // ─── Dashboard ───

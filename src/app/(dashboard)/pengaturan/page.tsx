@@ -135,7 +135,7 @@ export default function PengaturanPage() {
                 <Label className="text-base font-semibold">Autentikasi Dua Faktor (2FA)</Label>
                 <p className="text-sm text-muted-foreground mt-1">Tambahkan lapisan keamanan ekstra menggunakan Google Authenticator.</p>
               </div>
-              <Button variant="outline">Aktifkan</Button>
+              <Button variant="outline" disabled>Aktifkan</Button>
             </div>
             
             <div className="flex items-center justify-between p-4 border rounded-xl">
@@ -143,7 +143,7 @@ export default function PengaturanPage() {
                 <Label className="text-base font-semibold">Sesi Aktif</Label>
                 <p className="text-sm text-muted-foreground mt-1">Anda masuk pada 3 perangkat berbeda.</p>
               </div>
-              <Button variant="outline" className="text-destructive hover:bg-red-50 hover:text-destructive">Keluar dari semua perangkat</Button>
+              <Button variant="outline" className="text-destructive hover:bg-red-50 hover:text-destructive" disabled>Keluar dari semua perangkat</Button>
             </div>
           </div>
         </TabsContent>
@@ -176,14 +176,14 @@ export default function PengaturanPage() {
                 <Download className="w-10 h-10 mx-auto text-primary mb-4" />
                 <h4 className="font-semibold text-lg mb-2">Export Data Manual</h4>
                 <p className="text-sm text-muted-foreground mb-6">Unduh seluruh database dalam format SQL/JSON. Terakhir backup: 28 Mei 2026.</p>
-                <Button className="w-full">Backup Sekarang</Button>
+                <Button className="w-full" disabled>Backup Sekarang</Button>
               </div>
               
               <div className="border rounded-2xl p-6 text-center">
                 <Upload className="w-10 h-10 mx-auto text-info mb-4" />
                 <h4 className="font-semibold text-lg mb-2">Restore Data</h4>
                 <p className="text-sm text-muted-foreground mb-6">Kembalikan data dari file backup sebelumnya. Aksi ini akan menimpa data saat ini.</p>
-                <Button variant="outline" className="w-full">Upload File Backup</Button>
+                <Button variant="outline" className="w-full" disabled>Upload File Backup</Button>
               </div>
             </div>
           </div>

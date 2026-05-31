@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { checkAuth } from "@/lib/checkAuth";
 
 export async function getRecentTes(limit = 10) {
+  await checkAuth();
   return await prisma.tes.findMany({
     take: limit,
     orderBy: { createdAt: "desc" },
