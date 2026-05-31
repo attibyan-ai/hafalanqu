@@ -51,7 +51,19 @@ export default function LoginPage() {
         toast.success("Berhasil masuk", {
           description: "Selamat datang kembali di HafalanQu!",
         });
-        router.push("/dashboard");
+        
+        // Ambil sesi secara dinamis untuk menentukan role pengalihan
+        const sessionRes = await fetch("/api/auth/session");
+        const session = await sessionRes.json();
+        const role = session?.user?.role;
+
+        // Logika pengalihan rute berbasis peran (RBAC)
+        if (role === "admin" || role === "ustadz" || role === "santri" || role === "wali") {
+          router.push("/dashboard");
+        } else {
+          router.push("/dashboard");
+        }
+        
         router.refresh();
       }
     } catch (error) {
