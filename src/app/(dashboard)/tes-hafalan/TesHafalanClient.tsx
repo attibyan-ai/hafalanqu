@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowRight, ArrowLeft, HelpCircle, Shuffle, ChevronRight, Clock, CheckCircle2, XCircle } from "lucide-react";
+import { ArrowRight, ArrowLeft, HelpCircle, Shuffle, ChevronRight } from "lucide-react";
 import { formatDateShort } from "@/lib/utils";
 
 const testTypes = [
@@ -148,15 +148,13 @@ export default function TesHafalanClient({ initialData, santris }: { initialData
                 <th className="h-12 px-4 font-semibold">Tanggal</th>
                 <th className="h-12 px-4 font-semibold">Santri</th>
                 <th className="h-12 px-4 font-semibold">Jenis Tes</th>
-                <th className="h-12 px-4 font-semibold hidden md:table-cell">Benar/Salah</th>
-                <th className="h-12 px-4 font-semibold hidden md:table-cell">Durasi</th>
                 <th className="h-12 px-4 font-semibold">Skor</th>
               </tr>
             </thead>
             <tbody>
               {initialData.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">Belum ada riwayat tes</td>
+                  <td colSpan={4} className="px-4 py-8 text-center text-muted-foreground">Belum ada riwayat tes</td>
                 </tr>
               ) : initialData.map((hasil) => (
                 <tr key={hasil.id} className="border-b hover:bg-gray-50/50 transition-colors">
@@ -170,24 +168,6 @@ export default function TesHafalanClient({ initialData, santris }: { initialData
                     <span className="capitalize text-muted-foreground">
                       {hasil.jenis.replace("-", " ")}
                     </span>
-                  </td>
-                  <td className="px-4 py-4 hidden md:table-cell">
-                    <div className="flex items-center gap-3">
-                      <div className="flex items-center gap-1 text-emerald-600">
-                        <CheckCircle2 className="w-4 h-4" />
-                        <span className="font-medium">-</span>
-                      </div>
-                      <div className="flex items-center gap-1 text-red-500">
-                        <XCircle className="w-4 h-4" />
-                        <span className="font-medium">-</span>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-4 py-4 text-muted-foreground hidden md:table-cell">
-                    <div className="flex items-center gap-1.5">
-                      <Clock className="w-4 h-4" />
-                      -
-                    </div>
                   </td>
                   <td className="px-4 py-4">
                     <div className="flex items-center gap-3 min-w-[120px]">

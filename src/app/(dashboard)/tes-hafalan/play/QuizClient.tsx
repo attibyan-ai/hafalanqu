@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
@@ -32,6 +32,7 @@ export default function QuizClient({ santris }: { santris: any[] }) {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [score, setScore] = useState(0);
+  const scoreRef = useRef(0);
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
   const [isAnswerChecked, setIsAnswerChecked] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -195,7 +196,9 @@ export default function QuizClient({ santris }: { santris: any[] }) {
     setIsAnswerChecked(true);
 
     if (opt === questions[currentIndex].correctAnswer) {
-      setScore(s => s + 20); // 5 questions = 20 pts each
+      const newScore = scoreRef.current + 20;
+      scoreRef.current = newScore;
+      setScore(newScore); // 5 questions = 20 pts each
     }
   };
 
@@ -210,7 +213,7 @@ export default function QuizClient({ santris }: { santris: any[] }) {
       setIsSaving(true);
       try {
         const targetString = targetType === "juz" ? `Juz ${targetValue}` : `Surah ${targetValue}`;
-        await saveHasilTes(santriId, jenis, score, targetString);
+        await saveHasilTes(santriId, jenis, scoreRef.current, targetString);
         toast.success("Hasil tes berhasil disimpan");
       } catch (e) {
         toast.error("Gagal menyimpan hasil tes");
@@ -242,8 +245,8 @@ export default function QuizClient({ santris }: { santris: any[] }) {
           
           <div className="bg-gray-50 rounded-2xl p-6 mb-8 border border-gray-100">
             <div className="text-sm text-muted-foreground font-medium mb-1">Total Skor</div>
-            <div className={`text-6xl font-extrabold ${score >= 70 ? 'text-emerald-500' : 'text-amber-500'}`}>
-              {score}
+            <div className={`text-6xl font-extrabold ${scoreRef.current >= 70 ? 'text-emerald-500' : 'text-amber-500'}`}>
+              {scoreRef.current}
             </div>
             <div className="text-sm text-muted-foreground mt-2">Dari 100 poin (5 Soal)</div>
           </div>

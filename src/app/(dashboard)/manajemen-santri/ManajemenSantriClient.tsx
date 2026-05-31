@@ -218,7 +218,7 @@ export default function ManajemenSantriClient({ initialData }: { initialData: Sa
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <FormField label="Halaqah" required error={errors.halaqah?.message}>
-                  <Select onValueChange={(v) => setValue("halaqah", v)}>
+                  <Select onValueChange={(v) => setValue("halaqah", v, { shouldValidate: true })}>
                     <SelectTrigger>
                       <SelectValue placeholder="Pilih..." />
                     </SelectTrigger>

@@ -46,11 +46,11 @@ export default function DaftarHadirClient({ initialData, santris, hafalans }: { 
       }
     });
 
-    // 2. Infer from hafalans (overwrites if there is a manual record, or fills empty)
+    // 2. Infer from hafalans (only fill empty, do NOT overwrite manual records)
     hafalans?.forEach(h => {
       const date = new Date(h.tanggal);
       if (date.getMonth() + 1 === parseInt(selectedMonth) && date.getFullYear() === parseInt(selectedYear)) {
-        if (data[h.santriId]) {
+        if (data[h.santriId] && !data[h.santriId][date.getDate()]) {
           data[h.santriId][date.getDate()] = "hadir";
         }
       }

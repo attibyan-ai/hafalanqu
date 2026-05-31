@@ -47,8 +47,8 @@ const columns = (onDelete: (id: string) => void): ColumnDef<HafalanData>[] => [
     accessorKey: "jenis",
     header: "Jenis",
     cell: ({ row }) => (
-      <Badge variant={row.original.jenis === "Ziyadah" ? "default" : "secondary"}>
-        {row.original.jenis}
+      <Badge variant={row.original.jenis.toLowerCase() === "ziyadah" ? "default" : "secondary"}>
+        {row.original.jenis === "ziyadah" ? "Ziyadah" : "Muraja'ah"}
       </Badge>
     ),
   },
@@ -57,7 +57,7 @@ const columns = (onDelete: (id: string) => void): ColumnDef<HafalanData>[] => [
     header: "Kualitas",
     cell: ({ row }) => (
       <Badge className={getKualitasColor(row.original.kualitas)} variant="outline">
-        {row.original.kualitas}
+        {getKualitasLabel(row.original.kualitas)}
       </Badge>
     ),
   },
@@ -147,8 +147,8 @@ export default function RiwayatHafalanClient({ initialData }: { initialData: any
               value={jenisFilter}
               onChange={setJenisFilter}
               options={[
-                { value: "Ziyadah", label: "Ziyadah" },
-                { value: "Muraja'ah", label: "Muraja'ah" },
+                { value: "ziyadah", label: "Ziyadah" },
+                { value: "murajaah", label: "Muraja'ah" },
               ]}
             />
             <FilterDropdown 
@@ -156,11 +156,11 @@ export default function RiwayatHafalanClient({ initialData }: { initialData: any
               value={kualitasFilter}
               onChange={setKualitasFilter}
               options={[
-                { value: "Mumtaz", label: "Mumtaz" },
-                { value: "Jayyid Jiddan", label: "Jayyid Jiddan" },
-                { value: "Jayyid", label: "Jayyid" },
-                { value: "Maqbul", label: "Maqbul" },
-                { value: "Ghair Maqbul", label: "Ghair Maqbul" },
+                { value: "mumtaz", label: "Mumtaz" },
+                { value: "jayyid-jiddan", label: "Jayyid Jiddan" },
+                { value: "jayyid", label: "Jayyid" },
+                { value: "maqbul", label: "Maqbul" },
+                { value: "ghair-maqbul", label: "Ghair Maqbul" },
               ]}
             />
           </div>

@@ -74,7 +74,7 @@ export const mobileNavItems = [
     icon: Users,
   },
   {
-    label: "Menu",
+    label: "Lainnya",
     href: "/pengaturan",
     icon: Settings,
   },
