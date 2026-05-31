@@ -16,14 +16,22 @@
     --secondary: 155 40% 94%;
     --secondary-foreground: 155 78% 27%;
     --muted: 220 14% 96%;
-    --muted-foreground: 220 8% 46%;
+    --muted-foreground: 220 8% 40%;
     --accent: 155 50% 93%;
     --accent-foreground: 155 78% 27%;
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
-    --border: 220 13% 91%;
-    --input: 220 13% 91%;
+    --border: 220 13% 90%;
+    --input: 220 13% 90%;
     --ring: 155 78% 27%;
+    
+    --success: 160 84% 39%;
+    --success-light: 160 84% 96%;
+    --warning: 38 92% 50%;
+    --warning-light: 48 96% 95%;
+    --info: 217 91% 60%;
+    --info-light: 214 100% 95%;
+
     --radius: 1rem;
 
     /* Custom tokens */
@@ -33,6 +41,35 @@
     --page-padding: 2rem;
     --mobile-nav-height: 4.5rem;
   }
+
+  .dark {
+    --background: 220 20% 8%;
+    --foreground: 220 14% 96%;
+    --card: 220 20% 12%;
+    --card-foreground: 220 14% 96%;
+    --popover: 220 20% 12%;
+    --popover-foreground: 220 14% 96%;
+    --primary: 155 78% 40%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 155 40% 20%;
+    --secondary-foreground: 155 78% 80%;
+    --muted: 220 14% 16%;
+    --muted-foreground: 220 8% 65%;
+    --accent: 155 50% 20%;
+    --accent-foreground: 155 78% 80%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 220 13% 20%;
+    --input: 220 13% 20%;
+    --ring: 155 78% 40%;
+    
+    --success: 160 84% 45%;
+    --success-light: 160 84% 20%;
+    --warning: 38 92% 55%;
+    --warning-light: 48 96% 20%;
+    --info: 217 91% 65%;
+    --info-light: 214 100% 20%;
+  }
 }
 
 @layer base {
@@ -41,7 +78,7 @@
   }
 
   body {
-    @apply bg-[#F7F8FA] text-foreground font-sans antialiased;
+    @apply bg-background text-foreground font-sans antialiased;
   }
 
   /* Smooth scrolling */
@@ -78,7 +115,7 @@
 @layer components {
   /* Card base */
   .card {
-    @apply bg-white rounded-2xl shadow-soft border border-gray-100/80;
+    @apply bg-card text-card-foreground rounded-2xl shadow-soft-md border border-gray-200 dark:border-white/10;
   }
 
   .card-hover {
@@ -96,7 +133,7 @@
 
   /* Islamic geometric pattern background */
   .islamic-pattern {
-    background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%230F7B53' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' width='100' height='100'%3E%3Cpath d='M50 0 L55 45 L100 50 L55 55 L50 100 L45 55 L0 50 L45 45 Z' fill='%230F7B53' fill-opacity='0.05'/%3E%3Cpath d='M25 25 L50 10 L75 25 L90 50 L75 75 L50 90 L25 75 L10 50 Z' stroke='%230F7B53' stroke-width='0.5' stroke-opacity='0.08' fill='none'/%3E%3C/svg%3E");
   }
 
   /* Gradient background */

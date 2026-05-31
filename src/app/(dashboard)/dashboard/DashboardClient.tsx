@@ -83,7 +83,7 @@ export default function DashboardClient({ stats }: DashboardClientProps) {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
-          <ChartCard title="Tren Hafalan Mingguan" showPeriodSelector>
+          <ChartCard title="Tren Hafalan Mingguan">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={stats.hafalanChartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                 <defs>
@@ -151,7 +151,7 @@ export default function DashboardClient({ stats }: DashboardClientProps) {
                     <div className="absolute top-10 bottom-[-24px] left-5 w-0.5 bg-gray-100"></div>
                   )}
                   <Avatar className="h-10 w-10 shrink-0 border border-gray-100">
-                    <AvatarImage src={activity.avatar || ""} />
+                    {activity.avatar && <AvatarImage src={activity.avatar} />}
                     <AvatarFallback className="bg-primary-50 text-primary">{getInitials(activity.santriNama)}</AvatarFallback>
                   </Avatar>
                   <div>

@@ -148,8 +148,8 @@ export default function TesHafalanClient({ initialData, santris }: { initialData
                 <th className="h-12 px-4 font-semibold">Tanggal</th>
                 <th className="h-12 px-4 font-semibold">Santri</th>
                 <th className="h-12 px-4 font-semibold">Jenis Tes</th>
-                <th className="h-12 px-4 font-semibold">Benar/Salah</th>
-                <th className="h-12 px-4 font-semibold">Durasi</th>
+                <th className="h-12 px-4 font-semibold hidden md:table-cell">Benar/Salah</th>
+                <th className="h-12 px-4 font-semibold hidden md:table-cell">Durasi</th>
                 <th className="h-12 px-4 font-semibold">Skor</th>
               </tr>
             </thead>
@@ -171,7 +171,7 @@ export default function TesHafalanClient({ initialData, santris }: { initialData
                       {hasil.jenis.replace("-", " ")}
                     </span>
                   </td>
-                  <td className="px-4 py-4">
+                  <td className="px-4 py-4 hidden md:table-cell">
                     <div className="flex items-center gap-3">
                       <div className="flex items-center gap-1 text-emerald-600">
                         <CheckCircle2 className="w-4 h-4" />
@@ -183,7 +183,7 @@ export default function TesHafalanClient({ initialData, santris }: { initialData
                       </div>
                     </div>
                   </td>
-                  <td className="px-4 py-4 text-muted-foreground">
+                  <td className="px-4 py-4 text-muted-foreground hidden md:table-cell">
                     <div className="flex items-center gap-1.5">
                       <Clock className="w-4 h-4" />
                       -

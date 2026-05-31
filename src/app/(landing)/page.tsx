@@ -1,12 +1,14 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { BookOpen, BarChart3, Shield, Star, Users } from "lucide-react";
+import { BookOpen, BarChart3, Shield, Star, Users, Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
 export default function HomePage() {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const container = {
     hidden: { opacity: 0 },
     show: {
@@ -41,14 +43,47 @@ export default function HomePage() {
           </div>
 
           <div className="flex items-center gap-4">
-            <Link href="/login">
-              <Button variant="ghost" className="hidden md:inline-flex">Masuk</Button>
+            <Link href="/login" className="hidden md:inline-flex">
+              <Button variant="ghost">Masuk</Button>
             </Link>
-            <Link href="/login">
+            <Link href="/login" className="hidden md:inline-flex">
               <Button>Mulai Gratis</Button>
             </Link>
+            <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setIsMenuOpen(true)}>
+              <Menu className="w-6 h-6" />
+            </Button>
           </div>
         </div>
+
+        {/* Mobile Menu */}
+        {isMenuOpen && (
+          <div className="fixed inset-0 z-50 bg-white md:hidden flex flex-col p-6">
+            <div className="flex justify-between items-center mb-8">
+              <div className="flex items-center gap-2">
+                <div className="bg-primary p-2 rounded-xl text-white">
+                  <BookOpen className="w-5 h-5" />
+                </div>
+                <span className="font-bold text-xl text-dark">HafalanQu</span>
+              </div>
+              <Button variant="ghost" size="icon" onClick={() => setIsMenuOpen(false)}>
+                <X className="w-6 h-6" />
+              </Button>
+            </div>
+            <div className="flex flex-col gap-6 text-lg font-medium">
+              <a href="#fitur" onClick={() => setIsMenuOpen(false)} className="hover:text-primary border-b pb-4">Fitur</a>
+              <a href="#tentang" onClick={() => setIsMenuOpen(false)} className="hover:text-primary border-b pb-4">Tentang</a>
+              <a href="#kontak" onClick={() => setIsMenuOpen(false)} className="hover:text-primary border-b pb-4">Kontak</a>
+            </div>
+            <div className="mt-auto flex flex-col gap-4">
+              <Link href="/login" onClick={() => setIsMenuOpen(false)}>
+                <Button variant="outline" size="lg" className="w-full">Masuk</Button>
+              </Link>
+              <Link href="/login" onClick={() => setIsMenuOpen(false)}>
+                <Button size="lg" className="w-full">Mulai Gratis</Button>
+              </Link>
+            </div>
+          </div>
+        )}
       </nav>
 
       {/* Hero Section */}
@@ -74,8 +109,8 @@ export default function HomePage() {
               <Link href="/login">
                 <Button size="xl" className="rounded-2xl text-base w-full sm:w-auto">Mulai Sekarang</Button>
               </Link>
-              <Link href="/login">
-                <Button variant="outline" size="xl" className="rounded-2xl text-base w-full sm:w-auto bg-white/50 backdrop-blur-sm">Lihat Demo</Button>
+              <Link href="#fitur">
+                <Button variant="outline" size="xl" className="rounded-2xl text-base w-full sm:w-auto bg-white/50 backdrop-blur-sm">Lihat Fitur</Button>
               </Link>
             </motion.div>
           </motion.div>
@@ -100,6 +135,7 @@ export default function HomePage() {
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">Total Santri Aktif</p>
                   <p className="text-3xl font-bold text-dark">1,248</p>
+                  <span className="text-[10px] text-muted-foreground uppercase tracking-widest block -mt-1">Contoh Mockup</span>
                 </div>
               </div>
 

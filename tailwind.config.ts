@@ -65,16 +65,16 @@ const config: Config = {
           foreground: "hsl(var(--destructive-foreground))",
         },
         success: {
-          DEFAULT: "#10B981",
-          light: "#D1FAE5",
+          DEFAULT: "hsl(var(--success))",
+          light: "hsl(var(--success-light))",
         },
         warning: {
-          DEFAULT: "#F59E0B",
-          light: "#FEF3C7",
+          DEFAULT: "hsl(var(--warning))",
+          light: "hsl(var(--warning-light))",
         },
         info: {
-          DEFAULT: "#3B82F6",
-          light: "#DBEAFE",
+          DEFAULT: "hsl(var(--info))",
+          light: "hsl(var(--info-light))",
         },
       },
       fontFamily: {

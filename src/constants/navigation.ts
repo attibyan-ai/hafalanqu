@@ -54,7 +54,7 @@ export const navigationItems = [
 
 export const mobileNavItems = [
   {
-    label: "Dashboard",
+    label: "Beranda",
     href: "/dashboard",
     icon: LayoutDashboard,
   },
@@ -64,7 +64,7 @@ export const mobileNavItems = [
     icon: BookOpen,
   },
   {
-    label: "Kehadiran",
+    label: "Absen",
     href: "/daftar-hadir",
     icon: CalendarCheck,
   },
@@ -74,7 +74,7 @@ export const mobileNavItems = [
     icon: Users,
   },
   {
-    label: "Lainnya",
+    label: "Menu",
     href: "/pengaturan",
     icon: Settings,
   },

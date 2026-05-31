@@ -100,12 +100,14 @@ export default function InputHafalanClient({ initialSantris }: { initialSantris:
 
       <div className="card p-6 md:p-10">
         {/* Stepper */}
-        <div className="relative flex justify-between items-center mb-12">
-          <div className="absolute left-0 top-1/2 -translate-y-1/2 w-full h-1 bg-gray-100 rounded-full z-0"></div>
-          <div 
-            className="absolute left-0 top-1/2 -translate-y-1/2 h-1 bg-primary rounded-full z-0 transition-all duration-500"
-            style={{ width: `${((currentStep - 1) / 2) * 100}%` }}
-          ></div>
+        <div className="relative flex justify-between items-center mb-12 px-2">
+          <div className="absolute left-[24px] right-[24px] top-1/2 -translate-y-1/2 h-1 bg-gray-100 rounded-full z-0"></div>
+          <div className="absolute left-[24px] right-[24px] top-1/2 -translate-y-1/2 h-1 z-0">
+            <div 
+              className="h-full bg-primary rounded-full transition-all duration-500"
+              style={{ width: `${((currentStep - 1) / (STEPS.length - 1)) * 100}%` }}
+            ></div>
+          </div>
           
           {STEPS.map((step) => {
             const isCompleted = currentStep > step.id;

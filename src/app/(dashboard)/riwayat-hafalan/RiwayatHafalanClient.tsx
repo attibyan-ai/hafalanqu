@@ -66,8 +66,8 @@ const columns = (onDelete: (id: string) => void): ColumnDef<HafalanData>[] => [
     header: "Aksi",
     cell: ({ row }) => (
       <div className="flex items-center gap-2">
-        <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive" onClick={() => onDelete(row.original.id)}>
-          <Trash2 className="w-4 h-4" />
+        <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive" onClick={() => onDelete(row.original.id)} aria-label="Hapus riwayat hafalan">
+          <Trash2 className="w-4 h-4" aria-hidden="true" />
         </Button>
       </div>
     ),

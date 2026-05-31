@@ -8,9 +8,9 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
   const { isCollapsed } = useSidebarStore();
 
   return (
-    <div className="min-h-screen bg-[#F7F8FA]">
+    <div className="min-h-screen bg-background text-foreground">
       <AppSidebar />
-      <main className={`transition-all duration-300 ${isCollapsed ? "md:ml-[5rem]" : "md:ml-[18rem]"}`}>
+      <main id="main-content" className={`transition-all duration-300 ${isCollapsed ? "md:ml-[5rem]" : "md:ml-[18rem]"}`}>
         <div className="p-4 md:p-8 pb-24 md:pb-8 max-w-7xl mx-auto">
           {children}
         </div>

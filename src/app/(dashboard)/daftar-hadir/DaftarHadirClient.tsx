@@ -173,8 +173,11 @@ export default function DaftarHadirClient({ initialData, santris, hafalans }: { 
           </div>
         </div>
 
-        <div className="overflow-x-auto rounded-xl border border-gray-100">
-          <table className="w-full text-sm text-center border-collapse">
+        <div className="text-xs text-muted-foreground mb-2 sm:hidden flex items-center gap-2">
+          <span>👉</span> Geser tabel untuk melihat hari lainnya
+        </div>
+        <div className="overflow-x-auto rounded-xl border border-gray-100 pb-2">
+          <table className="w-full min-w-max text-sm text-center border-collapse">
             <thead>
               <tr className="bg-gray-50 border-b border-gray-100">
                 <th className="sticky left-0 bg-gray-50 z-10 px-4 py-3 text-left font-semibold text-dark min-w-[180px] border-r border-gray-100">Nama Santri</th>
@@ -208,8 +211,17 @@ export default function DaftarHadirClient({ initialData, santris, hafalans }: { 
                       return (
                         <td 
                           key={day} 
-                          className="px-1 py-3 border-r border-gray-100 last:border-r-0 cursor-pointer hover:bg-gray-100 transition-colors"
+                          className="px-1 py-3 border-r border-gray-100 last:border-r-0 cursor-pointer hover:bg-gray-100 transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-inset"
                           onClick={() => handleCellClick(santri.id, santri.nama, day, status)}
+                          role="button"
+                          tabIndex={0}
+                          aria-label={`Kehadiran hari ke-${day}, status: ${status || 'belum diisi'}`}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' || e.key === ' ') {
+                              e.preventDefault();
+                              handleCellClick(santri.id, santri.nama, day, status);
+                            }
+                          }}
                         >
                           {status ? (
                             <TooltipProvider delayDuration={200}>
@@ -275,30 +287,32 @@ export default function DaftarHadirClient({ initialData, santris, hafalans }: { 
               {selectedCell?.santriNama} — {selectedCell?.day} {MONTHS[parseInt(selectedMonth) - 1]} {selectedYear}
             </DialogDescription>
           </DialogHeader>
-          <div className="py-4 space-y-4">
-            <FormField label="Status Kehadiran">
-              <Select value={formStatus} onValueChange={setFormStatus}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Pilih status..." />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="hadir">Hadir</SelectItem>
-                  <SelectItem value="izin">Izin</SelectItem>
-                  <SelectItem value="sakit">Sakit</SelectItem>
-                  <SelectItem value="udzur">Udzur</SelectItem>
-                  <SelectItem value="alpha">Alpha</SelectItem>
-                </SelectContent>
-              </Select>
-            </FormField>
-          </div>
-          <DialogFooter className="flex justify-between w-full">
-            <Button variant="outline" className="text-red-500 hover:text-red-600 hover:bg-red-50 mr-auto" onClick={handleDeleteKehadiran} disabled={isDeleting}>
-              {isDeleting ? "Menghapus..." : "Hapus Data"}
-            </Button>
-            <SubmitButton isLoading={isSubmitting} onClick={handleSaveKehadiran}>
-              Simpan Kehadiran
-            </SubmitButton>
-          </DialogFooter>
+          <form onSubmit={(e) => { e.preventDefault(); handleSaveKehadiran(); }}>
+            <div className="py-4 space-y-4">
+              <FormField label="Status Kehadiran">
+                <Select value={formStatus} onValueChange={setFormStatus}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Pilih status..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="hadir">Hadir</SelectItem>
+                    <SelectItem value="izin">Izin</SelectItem>
+                    <SelectItem value="sakit">Sakit</SelectItem>
+                    <SelectItem value="udzur">Udzur</SelectItem>
+                    <SelectItem value="alpha">Alpha</SelectItem>
+                  </SelectContent>
+                </Select>
+              </FormField>
+            </div>
+            <DialogFooter className="flex justify-between w-full mt-4">
+              <Button type="button" variant="outline" className="text-red-500 hover:text-red-600 hover:bg-red-50 mr-auto" onClick={handleDeleteKehadiran} disabled={isDeleting}>
+                {isDeleting ? "Menghapus..." : "Hapus Data"}
+              </Button>
+              <SubmitButton type="submit" isLoading={isSubmitting}>
+                Simpan Kehadiran
+              </SubmitButton>
+            </DialogFooter>
+          </form>
         </DialogContent>
       </Dialog>
 

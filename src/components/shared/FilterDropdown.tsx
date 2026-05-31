@@ -14,7 +14,7 @@ export function FilterDropdown({ label, options, value, onChange }: FilterDropdo
   return (
     <div className="flex items-center gap-2">
       <Select value={value} onValueChange={onChange}>
-        <SelectTrigger className="w-[180px]">
+        <SelectTrigger className="w-full md:w-[180px]">
           <SelectValue placeholder={label} />
         </SelectTrigger>
         <SelectContent>

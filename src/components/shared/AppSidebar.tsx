@@ -13,6 +13,7 @@ import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/comp
 import { useSession } from "next-auth/react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
+import { ThemeToggle } from "./ThemeToggle";
 
 export function AppSidebar() {
   const pathname = usePathname();
@@ -125,8 +126,11 @@ export function AppSidebar() {
         })}
       </div>
 
-      <div className="p-4 mt-auto">
-        <Separator className="bg-white/10 mb-4" />
+      <div className="p-4 mt-auto space-y-4">
+        <div className={cn("flex", isCollapsed ? "justify-center" : "justify-between items-center px-2")}>
+          <ThemeToggle />
+        </div>
+        <Separator className="bg-white/10" />
         <div className={cn("flex items-center gap-3", isCollapsed ? "justify-center" : "px-2")}>
           <Avatar className="h-10 w-10 border-2 border-white/10">
             <AvatarImage src={""} />

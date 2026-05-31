@@ -99,7 +99,7 @@ export function DataTable<TData, TValue>({
                 table.getRowModel().rows.map((row) => (
                   <tr
                     key={row.id}
-                    className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted group"
+                    className="border-b transition-colors hover:bg-gray-50/80 dark:hover:bg-white/5 data-[state=selected]:bg-muted group"
                   >
                     {row.getVisibleCells().map((cell) => (
                       <td key={cell.id} className="p-4 align-middle">

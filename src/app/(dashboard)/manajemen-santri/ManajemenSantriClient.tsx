@@ -9,6 +9,16 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { getInitials } from "@/lib/utils";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { FormField } from "@/components/shared/FormField";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -39,7 +49,7 @@ const columns = (onDelete: (id: string) => void): ColumnDef<SantriData>[] => [
     cell: ({ row }) => (
       <div className="flex items-center gap-3">
         <Avatar className="h-10 w-10 border border-gray-100">
-          <AvatarImage src="" />
+          {row.original.avatar && <AvatarImage src={row.original.avatar} />}
           <AvatarFallback className="bg-primary-50 text-primary">{getInitials(row.original.nama)}</AvatarFallback>
         </Avatar>
         <div>
@@ -97,8 +107,8 @@ const columns = (onDelete: (id: string) => void): ColumnDef<SantriData>[] => [
     header: "Aksi",
     cell: ({ row }) => (
       <div className="flex items-center gap-2">
-        <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive" onClick={() => onDelete(row.original.id)}>
-          <Trash2 className="w-4 h-4" />
+        <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive" onClick={() => onDelete(row.original.id)} aria-label="Hapus santri">
+          <Trash2 className="w-4 h-4" aria-hidden="true" />
         </Button>
       </div>
     ),
@@ -235,7 +245,7 @@ export default function ManajemenSantriClient({ initialData }: { initialData: Sa
             placeholder="Cari nama, NIS..." 
             className="w-full md:w-80"
           />
-          <div className="flex gap-4 flex-wrap">
+          <div className="grid grid-cols-2 md:flex gap-2 md:gap-4 w-full md:w-auto">
             <FilterDropdown 
               label="Halaqah"
               value={halaqahFilter}
@@ -263,27 +273,27 @@ export default function ManajemenSantriClient({ initialData }: { initialData: Sa
           emptyTitle="Data santri tidak ditemukan"
         />
       </div>
-      <Dialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
-        <DialogContent className="sm:max-w-[400px] text-center p-8">
+      <AlertDialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
+        <AlertDialogContent className="sm:max-w-[400px] text-center p-8">
           <div className="w-16 h-16 bg-red-100 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
             <Trash2 className="w-8 h-8" />
           </div>
-          <DialogHeader>
-            <DialogTitle className="text-center text-xl">Hapus Santri</DialogTitle>
-            <DialogDescription className="text-center text-base">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-center text-xl">Hapus Santri</AlertDialogTitle>
+            <AlertDialogDescription className="text-center text-base">
               Apakah Anda yakin ingin menghapus santri ini? Data hafalan dan kehadiran yang terhubung juga akan terhapus.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="flex gap-3 justify-center mt-6">
-            <Button variant="outline" className="w-full" onClick={() => setDeleteId(null)} disabled={isDeleting}>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="sm:justify-center mt-6">
+            <AlertDialogCancel className="w-full sm:w-auto" disabled={isDeleting}>
               Batal
-            </Button>
-            <Button variant="destructive" className="w-full" onClick={confirmDelete} disabled={isDeleting}>
+            </AlertDialogCancel>
+            <Button variant="destructive" className="w-full sm:w-auto" onClick={confirmDelete} disabled={isDeleting}>
               {isDeleting ? "Menghapus..." : "Ya, Hapus"}
             </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </motion.div>
   );
 }
