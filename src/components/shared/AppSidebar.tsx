@@ -69,6 +69,9 @@ export function AppSidebar() {
         >
           {isCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-5 h-5" />}
         </button>
+        <div className={cn("flex", isCollapsed ? "hidden" : "")}>
+          <ThemeToggle />
+        </div>
       </div>
 
       <div className="flex-1 overflow-y-auto px-4 py-2 space-y-1 scrollbar-hidden">
@@ -127,9 +130,6 @@ export function AppSidebar() {
       </div>
 
       <div className="p-4 mt-auto space-y-4">
-        <div className={cn("flex", isCollapsed ? "justify-center" : "justify-between items-center px-2")}>
-          <ThemeToggle />
-        </div>
         <Separator className="bg-white/10" />
         <div className={cn("flex items-center gap-3", isCollapsed ? "justify-center" : "px-2")}>
           <Avatar className="h-10 w-10 border-2 border-white/10">
