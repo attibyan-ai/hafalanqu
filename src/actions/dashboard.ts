@@ -183,6 +183,28 @@ export async function getDashboardStats() {
     "Maqbul": stats.maqbul,
   }));
 
+  const adminRecentActivities = recentActivities.map(h => ({
+    id: h.id,
+    santriNama: `Halaqoh ${h.santri?.halaqah || "Umum"}`,
+    action: `Input ${h.jenis.toLowerCase() === "ziyadah" ? "Ziyadah" : "Muraja'ah"}`,
+    detail: `Santri: ${h.santri.nama} - ${h.surah} (${h.kualitas})`,
+    timestamp: h.createdAt.toISOString(),
+    avatar: null,
+  }));
+
+  const halaqohScores = new Map<string, number>();
+  allHafalansAdmin.forEach(h => {
+    const hq = h.santri?.halaqah || "Umum";
+    const ayatCount = Math.max(0, h.ayatAkhir - h.ayatMulai + 1);
+    halaqohScores.set(hq, (halaqohScores.get(hq) || 0) + ayatCount);
+  });
+  
+  const adminTopHalaqoh = Array.from(halaqohScores.entries())
+    .map(([nama, ayat]) => ({ id: nama, nama, ayat, skor: ayat * 10 }))
+    .sort((a, b) => b.skor - a.skor)
+    .slice(0, 5)
+    .map((s, idx) => ({ ...s, rank: idx + 1 }));
+
   return {
     totalSantri,
     setoranHariIni,
@@ -200,5 +222,7 @@ export async function getDashboardStats() {
     totalHalaqoh,
     adminChartAktivitas,
     adminChartKualitas,
+    adminRecentActivities,
+    adminTopHalaqoh,
   };
 }

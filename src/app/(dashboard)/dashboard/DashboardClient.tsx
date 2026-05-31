@@ -40,6 +40,21 @@ interface DashboardClientProps {
     totalHalaqoh?: number;
     adminChartAktivitas?: Array<any>;
     adminChartKualitas?: Array<any>;
+    adminRecentActivities?: Array<{
+      id: string;
+      santriNama: string;
+      action: string;
+      detail: string;
+      timestamp: string;
+      avatar: string | null;
+    }>;
+    adminTopHalaqoh?: Array<{
+      id: string;
+      nama: string;
+      ayat: number;
+      skor: number;
+      rank: number;
+    }>;
   };
 }
 
@@ -205,12 +220,12 @@ export default function DashboardClient({ stats }: DashboardClientProps) {
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }} className="card p-6">
           <h3 className="font-bold text-xl mb-6">Aktivitas Terbaru</h3>
           <div className="space-y-6">
-            {stats.recentActivities.length === 0 ? (
+            {(isAdmin ? (stats.adminRecentActivities || []) : stats.recentActivities).length === 0 ? (
               <p className="text-sm text-muted-foreground text-center py-4">Belum ada aktivitas hari ini.</p>
             ) : (
-              stats.recentActivities.map((activity, i) => (
+              (isAdmin ? (stats.adminRecentActivities || []) : stats.recentActivities).map((activity, i) => (
                 <div key={activity.id} className="flex gap-4 relative">
-                  {i !== stats.recentActivities.length - 1 && (
+                  {i !== (isAdmin ? (stats.adminRecentActivities || []) : stats.recentActivities).length - 1 && (
                     <div className="absolute top-10 bottom-[-24px] left-5 w-0.5 bg-gray-100 dark:bg-white/10"></div>
                   )}
                   <Avatar className="h-10 w-10 shrink-0 border border-gray-100 dark:border-white/10">
@@ -232,27 +247,27 @@ export default function DashboardClient({ stats }: DashboardClientProps) {
         </motion.div>
 
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }} className="card p-6">
-          <h3 className="font-bold text-xl mb-6">Peringkat Santri (Hafalan Terbanyak)</h3>
+          <h3 className="font-bold text-xl mb-6">{isAdmin ? "Peringkat Halaqoh" : "Peringkat Santri (Hafalan Terbanyak)"}</h3>
           <div className="space-y-4">
-            {stats.topSantri.length === 0 ? (
-              <p className="text-sm text-muted-foreground text-center py-4">Belum ada data santri.</p>
+            {(isAdmin ? (stats.adminTopHalaqoh || []) : stats.topSantri).length === 0 ? (
+              <p className="text-sm text-muted-foreground text-center py-4">{isAdmin ? "Belum ada data halaqoh." : "Belum ada data santri."}</p>
             ) : (
-              stats.topSantri.map((santri) => (
-                <div key={santri.id} className="flex items-center justify-between p-4 rounded-2xl bg-gray-50 dark:bg-white/[0.03] hover:bg-primary-50 dark:hover:bg-primary-50/10 transition-colors">
+              (isAdmin ? (stats.adminTopHalaqoh || []) : stats.topSantri).map((item) => (
+                <div key={item.id} className="flex items-center justify-between p-4 rounded-2xl bg-gray-50 dark:bg-white/[0.03] hover:bg-primary-50 dark:hover:bg-primary-50/10 transition-colors">
                   <div className="flex items-center gap-4">
                     <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm
-                      ${santri.rank === 1 ? 'bg-amber-100 text-amber-600' : 
-                        santri.rank === 2 ? 'bg-gray-200 dark:bg-white/10 text-gray-600 dark:text-gray-300' : 
-                        santri.rank === 3 ? 'bg-orange-100 text-orange-600' : 
+                      ${item.rank === 1 ? 'bg-amber-100 text-amber-600' : 
+                        item.rank === 2 ? 'bg-gray-200 dark:bg-white/10 text-gray-600 dark:text-gray-300' : 
+                        item.rank === 3 ? 'bg-orange-100 text-orange-600' : 
                         'bg-white text-gray-400'}`}>
-                      #{santri.rank}
+                      #{item.rank}
                     </div>
                     <div>
-                      <p className="font-semibold text-dark">{santri.nama}</p>
-                      <p className="text-sm text-muted-foreground">{santri.ayat} Ayat Terhafal</p>
+                      <p className="font-semibold text-dark">{item.nama}</p>
+                      <p className="text-sm text-muted-foreground">{item.ayat} Ayat Terhafal</p>
                     </div>
                   </div>
-                  <Badge variant="success" className="px-3 py-1 text-sm font-bold shadow-sm">{santri.skor}</Badge>
+                  <Badge variant="success" className="px-3 py-1 text-sm font-bold shadow-sm">{item.skor}</Badge>
                 </div>
               ))
             )}
