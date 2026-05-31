@@ -176,17 +176,17 @@ export default function DaftarHadirClient({ initialData, santris, hafalans }: { 
         <div className="text-xs text-muted-foreground mb-2 sm:hidden flex items-center gap-2">
           <span>👉</span> Geser tabel untuk melihat hari lainnya
         </div>
-        <div className="overflow-x-auto rounded-xl border border-gray-100 pb-2">
+        <div className="overflow-x-auto rounded-xl border border-gray-100 dark:border-white/10 pb-2">
           <table className="w-full min-w-max text-sm text-center border-collapse">
             <thead>
-              <tr className="bg-gray-50 border-b border-gray-100">
-                <th className="sticky left-0 bg-gray-50 z-10 px-4 py-3 text-left font-semibold text-dark min-w-[180px] border-r border-gray-100">Nama Santri</th>
+              <tr className="bg-gray-50 dark:bg-white/[0.03] border-b border-gray-100 dark:border-white/10">
+                <th className="sticky left-0 bg-gray-50 dark:bg-white/[0.03] z-10 px-4 py-3 text-left font-semibold text-gray-900 dark:text-gray-50 min-w-[180px] border-r border-gray-100 dark:border-white/10">Nama Santri</th>
                 {days.map(day => (
-                  <th key={day} className="px-2 py-3 font-semibold text-muted-foreground min-w-[40px] border-r border-gray-100 last:border-r-0">
+                  <th key={day} className="px-2 py-3 font-semibold text-muted-foreground min-w-[40px] border-r border-gray-100 dark:border-white/10 last:border-r-0">
                     {day}
                   </th>
                 ))}
-                <th className="px-4 py-3 font-semibold text-dark min-w-[80px] bg-primary-50">Hadir</th>
+                <th className="px-4 py-3 font-semibold text-gray-900 dark:text-gray-50 min-w-[80px] bg-primary-50 dark:bg-primary-50/10">Hadir</th>
               </tr>
             </thead>
             <tbody>
@@ -199,8 +199,8 @@ export default function DaftarHadirClient({ initialData, santris, hafalans }: { 
                 let hadirCount = 0;
                 
                 return (
-                  <tr key={santri.id} className={cn("border-b border-gray-100 hover:bg-gray-50/50 transition-colors", idx % 2 === 0 ? "bg-white" : "bg-gray-50/30")}>
-                    <td className={cn("sticky left-0 z-10 px-4 py-3 text-left font-medium text-dark border-r border-gray-100", idx % 2 === 0 ? "bg-white" : "bg-gray-50")}>
+                  <tr key={santri.id} className={cn("border-b border-gray-100 dark:border-white/[0.06] hover:bg-gray-50/50 dark:hover:bg-white/[0.03] transition-colors", idx % 2 === 0 ? "bg-white dark:bg-transparent" : "bg-gray-50/30 dark:bg-white/[0.02]")}>
+                    <td className={cn("sticky left-0 z-10 px-4 py-3 text-left font-medium text-gray-900 dark:text-gray-50 border-r border-gray-100 dark:border-white/10", idx % 2 === 0 ? "bg-white dark:bg-dark" : "bg-gray-50 dark:bg-white/[0.03]")}>
                       {santri.nama}
                     </td>
                     
@@ -211,7 +211,7 @@ export default function DaftarHadirClient({ initialData, santris, hafalans }: { 
                       return (
                         <td 
                           key={day} 
-                          className="px-1 py-3 border-r border-gray-100 last:border-r-0 cursor-pointer hover:bg-gray-100 transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-inset"
+                          className="px-1 py-3 border-r border-gray-100 dark:border-white/[0.06] last:border-r-0 cursor-pointer hover:bg-gray-100 dark:hover:bg-white/[0.06] transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-inset"
                           onClick={() => handleCellClick(santri.id, santri.nama, day, status)}
                           role="button"
                           tabIndex={0}
@@ -240,7 +240,7 @@ export default function DaftarHadirClient({ initialData, santris, hafalans }: { 
                               </Tooltip>
                             </TooltipProvider>
                           ) : (
-                            <div className="w-6 h-6 mx-auto rounded-full bg-gray-50 border border-gray-100 hover:border-gray-300"></div>
+                            <div className="w-6 h-6 mx-auto rounded-full bg-gray-50 dark:bg-white/[0.06] border border-gray-100 dark:border-white/[0.08] hover:border-gray-300 dark:hover:border-white/20"></div>
                           )}
                         </td>
                       );

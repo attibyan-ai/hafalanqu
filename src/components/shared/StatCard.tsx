@@ -32,7 +32,7 @@ export function StatCard({ title, value, trend, icon: Icon, color = "primary", d
     >
       <div>
         <p className="text-sm font-medium text-muted-foreground">{title}</p>
-        <h3 className="text-3xl font-bold mt-2 text-dark">{value}</h3>
+        <h3 className="text-3xl font-bold mt-2 text-gray-900 dark:text-gray-50">{value}</h3>
         {trend !== undefined && (
           <p className={cn("text-sm mt-2 font-medium", Number(trend) >= 0 ? "text-success" : "text-destructive")}>
             {Number(trend) > 0 ? "+" : ""}{trend}%

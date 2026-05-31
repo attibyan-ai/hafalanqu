@@ -19,7 +19,7 @@ export function PageHeader({ title, subtitle, children }: PageHeaderProps) {
       className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
     >
       <div>
-        <h1 className="text-3xl font-bold tracking-tight text-dark">{title}</h1>
+        <h1 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-gray-50">{title}</h1>
         {subtitle && <p className="mt-1 text-muted-foreground">{subtitle}</p>}
       </div>
       {children && <div className="flex items-center gap-3">{children}</div>}

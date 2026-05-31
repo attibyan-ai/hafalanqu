@@ -60,10 +60,10 @@ export function DataTable<TData, TValue>({
 
   return (
     <div className="space-y-4">
-      <div className="rounded-2xl border bg-white overflow-hidden shadow-sm">
+      <div className="rounded-2xl border bg-white dark:bg-dark overflow-hidden shadow-sm">
         <div className="overflow-x-auto">
           <table className="w-full text-sm text-left">
-            <thead className="bg-gray-50/80 border-b text-muted-foreground">
+            <thead className="bg-gray-50/80 dark:bg-white/[0.03] border-b text-muted-foreground">
               {table.getHeaderGroups().map((headerGroup) => (
                 <tr key={headerGroup.id}>
                   {headerGroup.headers.map((header) => {

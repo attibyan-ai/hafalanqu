@@ -101,7 +101,7 @@ export default function InputHafalanClient({ initialSantris }: { initialSantris:
       <div className="card p-6 md:p-10">
         {/* Stepper */}
         <div className="relative flex justify-between items-center mb-12 px-2">
-          <div className="absolute left-[24px] right-[24px] top-1/2 -translate-y-1/2 h-1 bg-gray-100 rounded-full z-0"></div>
+          <div className="absolute left-[24px] right-[24px] top-1/2 -translate-y-1/2 h-1 bg-gray-100 dark:bg-white/10 rounded-full z-0"></div>
           <div className="absolute left-[24px] right-[24px] top-1/2 -translate-y-1/2 h-1 z-0">
             <div 
               className="h-full bg-primary rounded-full transition-all duration-500"
@@ -117,7 +117,7 @@ export default function InputHafalanClient({ initialSantris }: { initialSantris:
               <div key={step.id} className="relative z-10 flex flex-col items-center gap-2">
                 <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm transition-all duration-300
                   ${isActive ? 'bg-primary text-white shadow-glow-primary scale-110' : 
-                    isCompleted ? 'bg-primary text-white' : 'bg-gray-100 text-gray-400 border-2 border-white'}`}>
+                    isCompleted ? 'bg-primary text-white' : 'bg-gray-100 dark:bg-white/10 text-gray-400 border-2 border-white dark:border-white/10'}`}>
                   {isCompleted ? <Check className="w-5 h-5" /> : step.id}
                 </div>
                 <span className={`text-xs md:text-sm font-medium absolute -bottom-8 whitespace-nowrap

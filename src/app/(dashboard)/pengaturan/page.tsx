@@ -41,7 +41,7 @@ export default function PengaturanPage() {
       />
 
       <Tabs defaultValue="sistem" className="w-full">
-        <TabsList className="mb-6 grid grid-cols-2 md:flex w-full md:w-auto p-1 bg-white border border-gray-100 shadow-sm rounded-xl">
+        <TabsList className="mb-6 grid grid-cols-2 md:flex w-full md:w-auto p-1 bg-white dark:bg-dark border border-gray-100 dark:border-white/10 shadow-sm rounded-xl">
           <TabsTrigger value="sistem" className="gap-2 rounded-lg"><Settings className="w-4 h-4"/> Sistem</TabsTrigger>
           <TabsTrigger value="keamanan" className="gap-2 rounded-lg"><Shield className="w-4 h-4"/> Keamanan</TabsTrigger>
           <TabsTrigger value="backup" className="gap-2 rounded-lg"><Database className="w-4 h-4"/> Backup</TabsTrigger>
@@ -62,7 +62,7 @@ export default function PengaturanPage() {
               </div>
             </div>
 
-            <div className="w-full h-px bg-gray-100"></div>
+            <div className="w-full h-px bg-gray-100 dark:bg-white/10"></div>
 
             <div>
               <h3 className="text-lg font-semibold mb-4">Preferensi Regional</h3>
@@ -90,21 +90,21 @@ export default function PengaturanPage() {
               </div>
             </div>
 
-            <div className="w-full h-px bg-gray-100"></div>
+            <div className="w-full h-px bg-gray-100 dark:bg-white/10"></div>
 
             <div>
               <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
                 <Bell className="w-5 h-5 text-primary" /> Notifikasi
               </h3>
               <div className="space-y-4">
-                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
+                <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-white/[0.03] rounded-xl">
                   <div>
                     <Label className="text-base font-semibold">Notifikasi Email</Label>
                     <p className="text-sm text-muted-foreground mt-1">Kirim ringkasan harian setoran hafalan ke email ustadz.</p>
                   </div>
                   <Switch defaultChecked />
                 </div>
-                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
+                <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-white/[0.03] rounded-xl">
                   <div>
                     <Label className="text-base font-semibold">Notifikasi WhatsApp</Label>
                     <p className="text-sm text-muted-foreground mt-1">Kirim otomatis hasil hafalan ke nomor HP orang tua (memerlukan integrasi API).</p>
@@ -150,7 +150,7 @@ export default function PengaturanPage() {
 
         <TabsContent value="backup" className="space-y-6">
           <div className="card p-6 md:p-8 space-y-6">
-            <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
+            <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-white/[0.03] rounded-xl">
               <div>
                 <Label className="text-base font-semibold">Backup Otomatis Database</Label>
                 <p className="text-sm text-muted-foreground mt-1">Sistem akan membackup data secara berkala ke cloud.</p>
@@ -169,7 +169,7 @@ export default function PengaturanPage() {
               </Select>
             </FormField>
 
-            <div className="w-full h-px bg-gray-100 my-6"></div>
+            <div className="w-full h-px bg-gray-100 dark:bg-white/10 my-6"></div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="border rounded-2xl p-6 text-center">
@@ -198,7 +198,7 @@ export default function PengaturanPage() {
 
             <div className="overflow-x-auto">
               <table className="w-full text-sm text-left border">
-                <thead className="bg-gray-50 text-muted-foreground">
+                <thead className="bg-gray-50 dark:bg-white/[0.03] text-muted-foreground">
                   <tr>
                     <th className="h-12 px-4 border-r border-b font-semibold">Modul / Fitur</th>
                     <th className="h-12 px-4 border-r border-b font-semibold text-center w-32"><Badge className="bg-purple-100 text-purple-700 hover:bg-purple-100">Super Admin</Badge></th>
@@ -208,8 +208,8 @@ export default function PengaturanPage() {
                 </thead>
                 <tbody>
                   {permissionsMatrix.map((row, i) => (
-                    <tr key={i} className="border-b last:border-b-0 hover:bg-gray-50/50">
-                      <td className="p-4 border-r font-medium text-dark">{row.module}</td>
+                    <tr key={i} className="border-b last:border-b-0 hover:bg-gray-50/50 dark:hover:bg-white/[0.03]">
+                      <td className="p-4 border-r font-medium text-gray-900 dark:text-gray-50">{row.module}</td>
                       <td className="p-4 border-r text-center">{row.super ? <Check className="w-5 h-5 mx-auto text-success" /> : <span className="text-gray-300">-</span>}</td>
                       <td className="p-4 border-r text-center">{row.admin ? <Check className="w-5 h-5 mx-auto text-success" /> : <span className="text-gray-300">-</span>}</td>
                       <td className="p-4 text-center">{row.ustadz ? <Check className="w-5 h-5 mx-auto text-success" /> : <span className="text-gray-300">-</span>}</td>

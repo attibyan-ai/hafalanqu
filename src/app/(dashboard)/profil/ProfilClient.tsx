@@ -98,7 +98,7 @@ export default function ProfilClient({ user }: { user: any }) {
                 </div>
               </div>
               <div className="text-center sm:text-left">
-                <h2 className="text-2xl font-bold text-dark">{user?.name || "User"}</h2>
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-50">{user?.name || "User"}</h2>
                 <div className="flex items-center justify-center sm:justify-start gap-3 mt-2 mb-3">
                   <Badge className={getRoleBadgeColor(user?.role || "ustadz")} variant="outline">
                     {getRoleLabel(user?.role || "ustadz")}
@@ -108,7 +108,7 @@ export default function ProfilClient({ user }: { user: any }) {
               </div>
             </div>
 
-            <div className="w-full h-px bg-gray-100 mb-8"></div>
+            <div className="w-full h-px bg-gray-100 dark:bg-white/10 mb-8"></div>
 
             <form onSubmit={formProfile.handleSubmit(onSubmitProfile)} className="space-y-6">
               <h3 className="font-semibold text-lg">Informasi Dasar</h3>

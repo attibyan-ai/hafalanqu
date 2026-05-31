@@ -49,12 +49,12 @@ const columns = (onDelete: (id: string) => void): ColumnDef<SantriData>[] => [
     header: "Nama Santri",
     cell: ({ row }) => (
       <div className="flex items-center gap-3">
-        <Avatar className="h-10 w-10 border border-gray-100">
+        <Avatar className="h-10 w-10 border border-gray-100 dark:border-white/10">
           {row.original.avatar && <AvatarImage src={row.original.avatar} />}
           <AvatarFallback className="bg-primary-50 text-primary">{getInitials(row.original.nama)}</AvatarFallback>
         </Avatar>
         <div>
-          <p className="font-semibold text-dark">{row.original.nama}</p>
+          <p className="font-semibold text-gray-900 dark:text-gray-50">{row.original.nama}</p>
         </div>
       </div>
     ),
@@ -81,7 +81,7 @@ const columns = (onDelete: (id: string) => void): ColumnDef<SantriData>[] => [
       const percentage = targetJuz > 0 ? Math.round((progressJuz / targetJuz) * 100) : 0;
       return (
         <div className="flex items-center gap-3 min-w-[150px]">
-          <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
+          <div className="w-full h-2 bg-gray-100 dark:bg-white/10 rounded-full overflow-hidden">
             <div 
               className="h-full bg-primary transition-all duration-500"
               style={{ width: `${percentage}%` }}
@@ -98,7 +98,7 @@ const columns = (onDelete: (id: string) => void): ColumnDef<SantriData>[] => [
     accessorKey: "status",
     header: "Status",
     cell: ({ row }) => (
-      <Badge className={row.original.status === "active" ? "bg-emerald-100 text-emerald-700 border-emerald-200" : "bg-gray-100 text-gray-700 border-gray-200"} variant="outline">
+      <Badge className={row.original.status === "active" ? "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-700/30" : "bg-gray-100 dark:bg-white/10 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-white/10"} variant="outline">
         {row.original.status === "active" ? "Aktif" : "Tidak Aktif"}
       </Badge>
     ),
@@ -184,7 +184,7 @@ export default function ManajemenSantriClient({ initialData }: { initialData: Sa
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-dark">Manajemen Santri</h1>
+          <h1 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-gray-50">Manajemen Santri</h1>
           <p className="mt-1 text-muted-foreground">Kelola data santri, halaqah, dan target hafalan</p>
         </div>
         

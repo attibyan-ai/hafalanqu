@@ -5,8 +5,8 @@ export default function Loading() {
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 mb-8">
         <div className="space-y-1">
-          <div className="h-8 w-64 bg-gray-200/60 rounded-xl animate-pulse"></div>
-          <div className="h-4 w-48 bg-gray-200/60 rounded-xl animate-pulse"></div>
+          <div className="h-8 w-64 bg-gray-200/60 dark:bg-white/[0.06] rounded-xl animate-pulse"></div>
+          <div className="h-4 w-48 bg-gray-200/60 dark:bg-white/[0.06] rounded-xl animate-pulse"></div>
         </div>
       </div>
       

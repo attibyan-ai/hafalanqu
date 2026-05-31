@@ -243,7 +243,7 @@ export default function QuizClient({ santris }: { santris: any[] }) {
           <h1 className="text-3xl font-bold text-dark mb-2">Tes Selesai!</h1>
           <p className="text-muted-foreground mb-8">Hasil tes untuk <strong className="text-dark">{santriName}</strong></p>
           
-          <div className="bg-gray-50 rounded-2xl p-6 mb-8 border border-gray-100">
+          <div className="bg-gray-50 dark:bg-white/[0.03] rounded-2xl p-6 mb-8 border border-gray-100 dark:border-white/[0.08]">
             <div className="text-sm text-muted-foreground font-medium mb-1">Total Skor</div>
             <div className={`text-6xl font-extrabold ${scoreRef.current >= 70 ? 'text-emerald-500' : 'text-amber-500'}`}>
               {scoreRef.current}
@@ -298,7 +298,7 @@ export default function QuizClient({ santris }: { santris: any[] }) {
       <div className="grid gap-4">
         <AnimatePresence>
           {currentQ.options.map((opt, idx) => {
-            let btnClass = "border-gray-200 hover:border-primary hover:bg-primary-50 text-dark";
+            let btnClass = "border-gray-200 dark:border-white/10 hover:border-primary hover:bg-primary-50 dark:hover:bg-primary-50/10 text-gray-900 dark:text-gray-50";
             let icon = null;
             
             if (isAnswerChecked) {
@@ -309,7 +309,7 @@ export default function QuizClient({ santris }: { santris: any[] }) {
                 btnClass = "border-red-500 bg-red-50 text-red-800";
                 icon = <XCircle className="w-5 h-5 text-red-500" />;
               } else {
-                btnClass = "border-gray-100 opacity-50 bg-gray-50 text-gray-400";
+                btnClass = "border-gray-100 dark:border-white/[0.06] opacity-50 bg-gray-50 dark:bg-white/[0.02] text-gray-400";
               }
             }
 

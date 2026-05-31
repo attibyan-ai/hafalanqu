@@ -148,9 +148,9 @@ export default function DashboardClient({ stats }: DashboardClientProps) {
               stats.recentActivities.map((activity, i) => (
                 <div key={activity.id} className="flex gap-4 relative">
                   {i !== stats.recentActivities.length - 1 && (
-                    <div className="absolute top-10 bottom-[-24px] left-5 w-0.5 bg-gray-100"></div>
+                    <div className="absolute top-10 bottom-[-24px] left-5 w-0.5 bg-gray-100 dark:bg-white/10"></div>
                   )}
-                  <Avatar className="h-10 w-10 shrink-0 border border-gray-100">
+                  <Avatar className="h-10 w-10 shrink-0 border border-gray-100 dark:border-white/10">
                     {activity.avatar && <AvatarImage src={activity.avatar} />}
                     <AvatarFallback className="bg-primary-50 text-primary">{getInitials(activity.santriNama)}</AvatarFallback>
                   </Avatar>
@@ -175,11 +175,11 @@ export default function DashboardClient({ stats }: DashboardClientProps) {
               <p className="text-sm text-muted-foreground text-center py-4">Belum ada data santri.</p>
             ) : (
               stats.topSantri.map((santri) => (
-                <div key={santri.id} className="flex items-center justify-between p-4 rounded-2xl bg-gray-50 hover:bg-primary-50 transition-colors">
+                <div key={santri.id} className="flex items-center justify-between p-4 rounded-2xl bg-gray-50 dark:bg-white/[0.03] hover:bg-primary-50 dark:hover:bg-primary-50/10 transition-colors">
                   <div className="flex items-center gap-4">
                     <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm
                       ${santri.rank === 1 ? 'bg-amber-100 text-amber-600' : 
-                        santri.rank === 2 ? 'bg-gray-200 text-gray-600' : 
+                        santri.rank === 2 ? 'bg-gray-200 dark:bg-white/10 text-gray-600 dark:text-gray-300' : 
                         santri.rank === 3 ? 'bg-orange-100 text-orange-600' : 
                         'bg-white text-gray-400'}`}>
                       #{santri.rank}

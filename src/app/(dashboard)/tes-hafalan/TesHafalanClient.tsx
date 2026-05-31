@@ -135,7 +135,7 @@ export default function TesHafalanClient({ initialData, santris }: { initialData
         
         <div className="overflow-x-auto">
           <table className="w-full text-sm text-left">
-            <thead className="bg-gray-50 border-b text-muted-foreground">
+            <thead className="bg-gray-50 dark:bg-white/[0.03] border-b text-muted-foreground">
               <tr>
                 <th className="h-12 px-4 font-semibold">Tanggal</th>
                 <th className="h-12 px-4 font-semibold">Santri</th>
@@ -149,7 +149,7 @@ export default function TesHafalanClient({ initialData, santris }: { initialData
                   <td colSpan={4} className="px-4 py-8 text-center text-muted-foreground">Belum ada riwayat tes</td>
                 </tr>
               ) : initialData.map((hasil) => (
-                <tr key={hasil.id} className="border-b hover:bg-gray-50/50 transition-colors">
+                <tr key={hasil.id} className="border-b hover:bg-gray-50/50 dark:hover:bg-white/[0.03] transition-colors">
                   <td className="px-4 py-4 font-medium text-muted-foreground">
                     {formatDateShort(hasil.tanggal.toISOString())}
                   </td>
@@ -166,7 +166,7 @@ export default function TesHafalanClient({ initialData, santris }: { initialData
                       <Badge className={`${getScoreColor(hasil.nilai)} w-10 justify-center font-bold`} variant="outline">
                         {hasil.nilai}
                       </Badge>
-                      <div className="w-24 h-2 bg-gray-100 rounded-full overflow-hidden">
+                      <div className="w-24 h-2 bg-gray-100 dark:bg-white/10 rounded-full overflow-hidden">
                         <div 
                           className={`h-full ${getScoreBarColor(hasil.nilai)}`}
                           style={{ width: `${hasil.nilai}%` }}
