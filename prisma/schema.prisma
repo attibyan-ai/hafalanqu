@@ -19,6 +19,18 @@ model User {
   adminId   String?  @db.ObjectId // Reference to the admin who owns this user
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  halaqahs  Halaqah[]
+}
+
+model Halaqah {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  nama      String
+  ustadzId  String?  @db.ObjectId
+  ustadz    User?    @relation(fields: [ustadzId], references: [id])
+  adminId   String   @db.ObjectId
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Santri {

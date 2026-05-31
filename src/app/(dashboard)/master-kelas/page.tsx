@@ -1,23 +1,13 @@
-"use client";
+import { getHalaqoh } from "@/actions/halaqoh";
+import { getAkun } from "@/actions/akun";
+import MasterKelasClient from "./MasterKelasClient";
 
-import { EmptyState } from "@/components/shared/EmptyState";
-import { PageHeader } from "@/components/shared/PageHeader";
-import { ClipboardList } from "lucide-react";
+export const dynamic = "force-dynamic";
 
-export default function MasterKelasPage() {
-  return (
-    <div className="space-y-6">
-      <PageHeader 
-        title="Manajemen Halaqoh" 
-        subtitle="Kelola data halaqoh dan pembimbing" 
-      />
-      <div className="card">
-        <EmptyState 
-          icon={ClipboardList} 
-          title="Segera Hadir" 
-          description="Fitur Manajemen Halaqoh sedang dalam tahap pengembangan." 
-        />
-      </div>
-    </div>
-  );
+export default async function MasterKelasPage() {
+  const halaqohs = await getHalaqoh();
+  const akuns = await getAkun();
+  const ustadzList = akuns.filter(a => a.role === "ustadz");
+  
+  return <MasterKelasClient halaqohs={halaqohs} ustadzList={ustadzList} />;
 }

@@ -1,23 +1,9 @@
-"use client";
+import { getAkun } from "@/actions/akun";
+import AkunClient from "./AkunClient";
 
-import { EmptyState } from "@/components/shared/EmptyState";
-import { PageHeader } from "@/components/shared/PageHeader";
-import { ShieldCheck } from "lucide-react";
+export const dynamic = "force-dynamic";
 
-export default function ManajemenPenggunaPage() {
-  return (
-    <div className="space-y-6">
-      <PageHeader 
-        title="Manajemen Akun" 
-        subtitle="Kelola akun guru dan murid di lembaga Anda" 
-      />
-      <div className="card">
-        <EmptyState 
-          icon={ShieldCheck} 
-          title="Segera Hadir" 
-          description="Fitur Manajemen Akun sedang dalam tahap pengembangan." 
-        />
-      </div>
-    </div>
-  );
+export default async function ManajemenPenggunaPage() {
+  const akuns = await getAkun();
+  return <AkunClient akuns={akuns} />;
 }
