@@ -1,152 +1,172 @@
-# BUG REPORT - hafalanqu-ui
-Tanggal: 2026-05-31
-Status: SEMUA BUG SUDAH DIPERBAIKI
+╔══════════════════════════════════════════════════════════════╗
+║                   BUG REPORT — HAFALANQU-UI                  ║
+║                   Generated: 02 Juni 2026                     ║
+╚══════════════════════════════════════════════════════════════╝
 
----
+Project: Next.js 15 App Router + Prisma 5.22 + MongoDB Atlas
+Total: 23 issues (4 critical, 6 high, 9 medium, 4 low)
 
-## BUG-01 [KRITIKAL] Prisma Client Connection Pool Exhaustion
-File: src/actions/*.ts, src/lib/auth.ts
-Deskripsi: Setiap file action membuat `new PrismaClient()` sendiri.
-  Di development (hot reload), tiap perubahan file bikin PrismaClient baru
-  tanpa disconnect → connection pool MongoDB habis.
-Fix: src/lib/prisma.ts singleton + semua file import dari sana.
+═══════════════════════════════════════
+  CRITICAL — 4 issues
+═══════════════════════════════════════
 
-## BUG-02 [INFO] Schema Provider vs Database
-File: prisma/schema.prisma, .env, prisma/dev.db
-Deskripsi: Schema bilang `mongodb`, .env MongoDB Atlas, tapi ada file
-  `prisma/dev.db` (SQLite artifact). Schema sudah benar, dev.db leftover.
-Fix: dev.db bisa dihapus (tidak dipakai).
+[BUG-01] Middleware tidak proteksi `/api/*` selain auth
+   File: src/middleware.ts:93
+   Problem: Matcher hanya exclude `/api/auth/` — tapi middleware punya `authorized: ({ token }) => !!token` yang redirect ke `/login` (HTML). API routes lain (`/api/*`) kena redirect HTML, bukan JSON 401.
+   Impact: Jika ada API route publik atau third-party integration di masa depan, mereka terima HTML bukan JSON. Error hard to debug.
+   Fix: Tambah pengecekan `if (pathname.startsWith('/api/')) return NextResponse.next()` di middleware callback, atau exclude semua `/api/` dari matcher.
 
-## BUG-03 [SUDAH FIX] Types vs Prisma Schema
-File: src/lib/types.ts (kosong)
-Deskripsi: Dulu ada `Santri.kelas` tapi Prisma pakai `halaqah`.
-  Sekarang types.ts kosong, kode langsung pakai Prisma types.
-Fix: Sudah resolved.
+[BUG-02] `super-admin` role dead code di utils tapi tak ada di schema/types
+   File: src/lib/utils.ts:104-119, prisma/schema.prisma:15, src/types/index.ts:77
+   Problem: `getRoleBadgeColor()` dan `getRoleLabel()` handle `"super-admin"`. Tapi schema cuma `admin | ustadz`. Type `UserRole = "admin" | "ustadz"`. Middleware rules juga tak punya `super-admin`.
+   Impact: Dead code. Jika ada user dengan role `super-admin` di DB, label tampil "Super Admin" — tapi middleware tak punya akses route untuk role ini, jadi user terkunci.
+   Fix: Hapus `super-admin` dari utils, atau tambah ke schema + types + middleware jika memang intended.
 
-## BUG-04 [SUDAH FIX] Middleware Missing /daftar-hadir
-File: src/middleware.ts
-Deskripsi: Matcher tidak include `/daftar-hadir/:path*`.
-Fix: Sudah ditambahkan.
+[BUG-03] `deleteMyAccount` admin hapus SEMUA data tanpa cascade terstruktur
+   File: src/actions/pengaturan.ts:69-89
+   Problem: Admin delete account → `deleteMany({ where: { adminId } })` pada Hafalan, Kehadiran, Tes, Santri, Halaqah, Setting, User (ustadz), lalu User (admin). Urutan hapus mungkin gagal karena relasi Prisma. Juga, jika ada data ustadz dengan relasi Halaqah, `user.deleteMany` bisa error karena FK constraint (MongoDB).
+   Impact: Satu klik dari admin bisa nuke seluruh sistem. Cascade tidak teruji dengan MongoDB.
+   Fix: Gunakan transaction dengan urutan hapus yang benar: child records dulu (hafalan, kehadiran, tes) → santri → halaqah → setting → user (ustadz) → user (admin).
 
-## BUG-05 [KRITIKAL] Kualitas Filter Mismatch
-File: src/app/(dashboard)/riwayat-hafalan/RiwayatHafalanClient.tsx
-Deskripsi: Filter options pakai title case ("Mumtaz", "Jayyid Jiddan")
-  tapi DB simpan lowercase ("mumtaz", "jayyid-jiddan"). Spasi vs hyphen
-  bikin filter tidak pernah match.
-Fix: Filter values diganti lowercase sesuai DB: "mumtaz", "jayyid-jiddan", dll.
-  Display pakai `getKualitasLabel()` untuk tampilan bagus.
+[BUG-04] Admin bisa buat admin lain (privilege escalation)
+   File: src/actions/akun.ts:29-63, 66-103
+   Problem: `createAkun` dan `updateAkun` menerima `data.role` dari form tanpa validasi. Admin bisa create user dengan `role: "admin"`. Juga di `updateAkun`, role bisa diubah seenaknya.
+   Impact: Eskalasi privilege. Satu admin bisa buat admin lain tanpa batas. Jika ada insider threat, dampak besar.
+   Fix: Tambah guard — hanya role tertentu yang bisa create admin. Atau set role langsung tanpa bisa diubah dari form. Gunakan Zod schema yang filter role.
 
-## BUG-06 [SUDAH FIX] Dashboard Trend Calculation
-File: src/actions/dashboard.ts
-Deskripsi: Trend Kualitas/Kehadiran dulu copy dari trend Setoran.
-Fix: Sekarang hitung dari data aktual per-bulan.
+═══════════════════════════════════════
+  HIGH — 6 issues
+═══════════════════════════════════════
 
-## BUG-07 [SUDAH FIX] Tes Target Hardcoded "Juz 30"
-File: src/app/(dashboard)/tes-hafalan/ (dulu QuizClient.tsx)
-Deskripsi: `saveHasilTes` hardcode target "Juz 30".
-Fix: Target dikirim dari quiz setup dialog via URL params.
+[BUG-05] `trendKehadiran` copas dari `trendSetoran`
+   File: src/actions/dashboard.ts:216
+   Problem: `trendKehadiran: trendSetoran` — kehadiran trend selalu sama dengan setoran trend. Tidak pernah dihitung sendiri.
+   Impact: Statistik dashboard menyesatkan. User lihat trend kehadiran padahal itu sebenarnya trend setoran.
+   Fix: Hitung trend kehadiran dari data kehadiran bulan ini vs bulan lalu, sama seperti trendSetoran.
 
-## BUG-08 [SUDAH FIX] QuizClient Infinite Loop
-File: src/app/(dashboard)/tes-hafalan/play/QuizClient.tsx
-Deskripsi: useEffect tanpa guard, API error tanpa handling.
-Fix: `isMounted` flag, proper error handling, redirect on failure.
+[BUG-06] `deleteHalaqoh` tak update santri terkait
+   File: src/actions/halaqoh.ts:82-92
+   Problem: Delete halaqah → santri dengan `halaqah: existing.nama` masih pointing ke nama halaqoh yang sudah dihapus.
+   Impact: Filter/sort by halaqah jadi ambigu. UI di daftar hadir, laporan, dashboard menampilkan nama halaqoh yang sudah tak ada.
+   Fix: Tambah `prisma.santri.updateMany({ where: { halaqah: existing.nama, adminId }, data: { halaqah: 'Umum' } })` sebelum delete.
 
-## BUG-09 [KRITIKAL] Jenis Filter Mismatch (Muraja'ah)
-File: src/app/(dashboard)/riwayat-hafalan/RiwayatHafalanClient.tsx
-Deskripsi: Filter "Muraja'ah" (dengan apostrophe) vs DB "murajaah"
-  (tanpa apostrophe). Filter tidak pernah match.
-Fix: Filter value diganti "murajaah". Display "Muraja'ah" via label.
+[BUG-07] `adminId` type declaration tak lengkap di next-auth.d.ts
+   File: src/types/next-auth.d.ts:22-26, src/lib/auth.ts:43, src/lib/checkAuth.ts:9
+   Problem: JWT dan Session interface cuma punya `id`, `role` — tapi `adminId` di-set via `as any`. TypeScript tidak validasi.
+   Impact: Dev experience buruk. `(session.user as any).adminId` di 10+ tempat. Jika ada rename field, kompiler tak tangkap.
+   Fix: Tambah `adminId?: string` ke JWT dan Session interfaces di next-auth.d.ts. Hapus semua `as any`.
 
-## BUG-10 [SUDAH FIX] Udzur Status
-File: prisma/schema.prisma, DaftarHadirClient.tsx
-Deskripsi: UI punya "udzur" tapi schema ragu.
-Fix: Schema comment sudah include "udzur". UI sudah lengkap.
+[BUG-08] `createAkun` default password `"123456"` untuk akun baru
+   File: src/actions/akun.ts:38
+   Problem: Default password `"123456"` saat akun dibuat tanpa password explicit. Ustadz/santri tidak tahu password mereka kecuali dikomunikasikan manual.
+   Impact: Security risk — password lemah, default known. Juga tak ada force change password saat first login.
+   Fix: Generate random password minimal 8 chars, atau wajibkan admin input password minimal 8 chars.
 
-## BUG-11 [SUDAH FIX] Server Actions Tanpa Auth
-File: src/actions/*.ts
-Deskripsi: `createHafalan`, `setKehadiran`, `deleteSantri` dll tanpa auth.
-Fix: Semua mutating actions panggil `checkAuth()`.
+[BUG-09] API route `/api/create-admin-secure` dan `/api/reset-db-secure` tanpa permission granular check
+   File: src/app/api/create-admin-secure/route.ts, src/app/api/reset-db-secure/route.ts
+   Problem: Hanya dilindungi middleware (perlu login). Tapi route ini mungkin dipanggil oleh ustadz biasa — middleware cek token, bukan role. Jika ada route yang butuh admin-only, middleware harus cek role juga.
+   Impact: Ustadz biasa bisa akses endpoint admin-only jika terautentikasi.
+   Fix: Tambah role check di route handler: `const session = await getServerSession(authOptions); if (session?.user?.role !== 'admin') return new Response('Forbidden', { status: 403 })`.
 
-## BUG-12 [SUDAH FIX] Server Actions Tanpa Validation
-File: src/actions/hafalan.ts, src/actions/santri.ts
-Deskripsi: Data masuk langsung ke Prisma tanpa validasi.
-Fix: Zod schemas + `.parse()` di semua create/update actions.
+[BUG-10] Quiz: `sambung-setelah` dan `sambung-sebelum` bisa kasih < 4 pilihan jawaban
+   File: src/app/(dashboard)/tes-hafalan/play/QuizClient.tsx:96-101, 125-130
+   Problem: Options di-generate dari ayat dalam juz/surah yang sama. Jika juz punya < 4 ayat unik (atau beda surah), jumlah options < 4. UI tetap render dengan grid 4 kolom — ada cell kosong.
+   Impact: User bisa tebak dari jumlah options yang sedikit. Kurang fair.
+   Fix: Fallback ke random ayat dari API global jika options < 4, atau cukup tampilkan options yang ada dengan label pilihan.
 
-## BUG-13 [SUDAH FIX] Registration Open
-File: src/actions/auth.ts
-Deskripsi: `registerUser` endpoint bisa dipanggil siapa saja.
-Fix: Throw error "Pendaftaran publik telah dinonaktifkan."
+═══════════════════════════════════════
+  MEDIUM — 9 issues
+═══════════════════════════════════════
 
-## BUG-14 [COSMETIC] Export Buttons Kosong
-File: RiwayatHafalanClient.tsx
-Deskripsi: Tombol "Export Excel" dan "Export PDF" tidak ada fungsinya.
-Fix: Toast "Fitur akan segera hadir" saat diklik.
+[BUG-11] `InputHafalanClient` stepper tidak validasi `kualitas` saat pindah step 2 → 3
+   File: src/app/(dashboard)/input-hafalan/InputHafalanClient.tsx:50-58
+   Problem: `handleNext` step 2 trigger fields `["jenis", "surah", "ayatMulai", "ayatAkhir"]`. Step 3 (kualitas, catatan) tidak tervalidasi sampai submit final. User bisa klik "Next" ke step 3 tanpa pilih kualitas.
+   Impact: User frustrasi — submit baru tau ada validasi gagal. Harus balik ke step 3 lagi.
+   Fix: Validasi step 3 fields saat `currentStep === 2` juga: `fieldsToValidate = [...fieldsToValidate, "kualitas"]`.
 
-## BUG-15 [COSMETIC] Profil Update Placeholder
-File: src/app/(dashboard)/profil/ProfilClient.tsx
-Deskripsi: Dulu form submit tidak melakukan apa-apa.
-Fix: Sekarang terhubung ke `updateProfile` + `updatePassword` actions
-  dengan auth check dan bcrypt verification.
+[BUG-12] `getRecentHafalan(limit)` tanpa batas atas
+   File: src/actions/hafalan.ts:8-19
+   Problem: Parameter `limit` bisa diisi angka besar (misal 999999). Prisma `take: limit` tanpa validasi.
+   Impact: Performance issue — bisa load ribuan record dalam satu query. Memory pressure.
+   Fix: `take: Math.min(limit, 100)`.
 
-## BUG-16 [COSMETIC] Pengaturan Save Button Fake
-File: src/app/(dashboard)/pengaturan/page.tsx
-Deskripsi: Button "Simpan Pengaturan" hanya timeout 1 detik.
-Fix: Toast "Fitur pengaturan akan segera hadir".
+[BUG-13] Quiz: `tebak-surah` options mungkin cuma 1 surah name
+   File: src/app/(dashboard)/tes-hafalan/play/QuizClient.tsx:155-158
+   Problem: Wrong options diambil dari `ayahs[random].surah.name` dalam juz/surah yang sama. Jika seluruh juz cuma dari 1 surah (misal Juz 30 punya banyak surah — fine. Tapi target Surah Al-Fatihah cuma 7 ayat → semua options nama surah sama).
+   Impact: Tebak surah jadi meaningless — semua pilihan sama.
+   Fix: Ambil wrong options dari daftar ALL surah names (114 surah), bukan dari range target.
 
-## BUG-17 [SEDANG] useEffect Cleanup
-File: src/app/(dashboard)/tes-hafalan/play/QuizClient.tsx
-Deskripsi: Async operation di useEffect tanpa cleanup.
-Fix: `isMounted` flag + cleanup function.
+[BUG-14] `checkAuth()` cari user by email, bukan ID
+   File: src/lib/checkAuth.ts:10
+   Problem: `prisma.user.findUnique({ where: { email } })` — jika email berubah via `updateProfile`, adminId jadi null, throw error "Sesi tidak valid". User harus logout/login.
+   Impact: User yang update email langsung error di dashboard. Harus logout.
+   Fix: Simpan `adminId` di JWT token waktu login dan pakai dari session, jangan query ulang by email. Atau tambah fallback: cari user by `id` dari session.
 
-## BUG-18 [KRITIKAL] Seed File Hardcoded Credentials
-File: prisma/seed.ts
-Deskripsi: Password admin hardcoded "admin123" di source code.
-Fix: `process.env.ADMIN_PASSWORD || 'admin123'` — configurable via env.
+[BUG-15] Daftar tahun hanya 2025 dan 2026 (hardcoded)
+   File: src/app/(dashboard)/daftar-hadir/DaftarHadirClient.tsx:169-171
+   Problem: Year selector cuma 2025 dan 2026. Di 2027, user tak bisa lihat data.
+   Impact: Maintenance burden. Setiap tahun harus update kode.
+   Fix: Generate year list dinamis: `Array.from({length: 3}, (_, i) => currentYear - 2 + i + 1)` atau dari data.
 
-## BUG-19 [SEDANG] Seed di Build Script
-File: package.json
-Deskripsi: `npm run build` jalankan `prisma db seed` setiap deploy
-  → admin di-upsert, password di-reset.
-Fix: Build script sekarang hanya `prisma generate && next build`.
+[BUG-16] Quiz: score pakai `scoreRef.current` pas `handleNext` — nilai bisa stale
+   File: src/app/(dashboard)/tes-hafalan/play/QuizClient.tsx:199-201, 216
+   Problem: `scoreRef.current` diupdate di `handleAnswer` (line 200) dan dibaca di `handleNext` (line 216). Race condition minimum (semua synchronous event handler) — tapi pakai ref untuk "persistence" di re-render agak fragile.
+   Impact: Jika ada future refactor ke async state update, score bisa 0 saat save.
+   Fix: Simpan final score di variable lokal: `const finalScore = scoreRef.current; await saveHasilTes(..., finalScore);`.
 
-## BUG-20 [SUDAH FIX] Progress Calculation
-File: src/actions/santri.ts
-Deskripsi: `progressJuz` dulu hardcode 5.
-Fix: `Math.min(Math.floor(totalAyat / 140), s.targetJuz)`.
+[BUG-17] `InputHafalanClient` reset form tak reset `santriId` dan `tanggal`
+   File: src/app/(dashboard)/input-hafalan/InputHafalanClient.tsx:79-84
+   Problem: On submit success, form reset `surah`, `ayatMulai`, `ayatAkhir`, `kualitas`, `catatan` — tapi `santriId` dan `tanggal` tetap. User mungkin lupa dan submit data ke santri yang salah di entry berikutnya.
+   Impact: Data integrity risk — setoran bisa masuk ke santri yang salah.
+   Fix: Reset `santriId` juga, atau tanya konfirmasi "Input untuk santri yang sama lagi?"
 
-## BUG-21 [SUDAH FIX] Kualitas Chart Rounding
-File: src/actions/dashboard.ts
-Deskripsi: Math.round bisa bikin total ≠ 100%.
-Fix: Largest remainder method (distribute sisa ke bucket terbesar).
+[BUG-18] RiwayatHafalanClient export button cuma toast (fake)
+   File: src/app/(dashboard)/riwayat-hafalan/RiwayatHafalanClient.tsx:133
+   Problem: Tombol "Export Excel" dan "Export PDF" cuma show toast "Fitur akan segera hadir". Tapi LaporanGlobalClient punya export Excel yang real.
+   Impact: User berekspektasi export, dapat toast.
+   Fix: Implementasi export untuk riwayat hafalan, atau hapus tombol sampai siap.
 
-## BUG-22 [COSMETIC] Danger Zone Buttons
-File: src/app/(dashboard)/pengaturan/page.tsx
-Deskripsi: "Kosongkan Semua Data" dan "Hapus Akun" tanpa handler.
-Fix: Toast "Fitur ini sedang dinonaktifkan".
+[BUG-19] `formatDateShort` di DaftarHadirClient panggil tanpa argument `bahasa`
+   File: src/app/(dashboard)/daftar-hadir/DaftarHadirClient.tsx:238
+   Problem: Tooltip panggil `MONTHS[Number(selectedMonth)-1]` — ini langsung dari array, bukan dari formatDate. Fine. Tapi ada implicit dependency: month names hardcoded di `MONTHS` array, tidak pakai locale.
+   Impact: Jika user ganti bahasa ke English atau Arabic, nama bulan tetap Indonesia.
+   Fix: Gunakan `formatDate` atau `intl.DateTimeFormat` untuk nama bulan, bukan hardcoded array.
 
-## BUG-23 [SUDAH FIX] Week Chart Data
-File: src/actions/dashboard.ts
-Deskripsi: Grafik mingguan tampilkan SEMUA data, bukan minggu ini.
-Fix: Filter `h.tanggal >= startOfWeek && h.tanggal <= endOfWeek`.
+═══════════════════════════════════════
+  LOW — 4 issues
+═══════════════════════════════════════
 
----
+[BUG-20] Dead import `bcrypt` di actions/auth.ts
+   File: src/actions/auth.ts:4
+   Problem: `import bcrypt from "bcryptjs"` — tidak dipakai. `registerUser` cuma throw error.
+   Impact: Tidak ada (tree-shake mungkin buang). Tapi warning linter.
+   Fix: Hapus import.
 
-## BUG BARU (ditemukan saat re-analisis)
+[BUG-21] Landing page duplicate class `max-w-4xl` override `max-w-7xl`
+   File: src/app/(landing)/page.tsx:100
+   Problem: `<div className="max-w-7xl ... max-w-4xl ...">` — `max-w-4xl` menang, hero section lebih sempit dari konten lain.
+   Impact: Visual inconsistency — hero lebih narrow dari sections di bawahnya.
+   Fix: Hapus `max-w-4xl` atau `max-w-7xl` (pilih satu).
 
-## NEW-01 [KRITIKAL] QuizClient Score Race Condition
-File: src/app/(dashboard)/tes-hafalan/play/QuizClient.tsx
-Deskripsi: `handleAnswer` update `score` via `setScore(s => s + 20)`.
-  `handleNext` dipanggil segera sesudahnya, tapi `score` state belum
-  ter-update (React async). `saveHasilTes` dapat nilai score lama.
-  Contoh: jawaban benar terakhir → score harus 100 tapi tersimpan 80.
-Fix: Tambah `scoreRef = useRef(0)`. `handleAnswer` update ref + state.
-  `handleNext` baca `scoreRef.current` untuk save.
+[BUG-22] Link footer landing page semua ke `#`
+   File: src/app/(landing)/page.tsx:321-335
+   Problem: "Panduan", "API", "Tentang Kami", "Kontak", "Kebijakan Privasi", "Syarat & Ketentuan" → `href="#"`.
+   Impact: Dead links. User klik, scroll ke atas.
+   Fix: Ganti dengan halaman yang valid, atau hapus sampai siap.
 
----
+[BUG-23] Route `/master-surat` di middleware tapi tak ada folder/page
+   File: src/middleware.ts:9
+   Problem: `{ prefix: "/master-surat", allowedRoles: ["admin"] }` — tapi tidak ada `src/app/(dashboard)/master-surat/`. 404 jika admin akses.
+   Impact: Admin bisa lihat link di sidebar (?) → 404. Tapi sidebar mungkin tidak include route ini.
+   Fix: Hapus dari middleware rules atau buat halaman.
 
-## RINGKASAN
-Total bugs ditemukan: 23 + 1 new = 24
-Sudah diperbaiki sebelumnya: 17
-Diperbaiki sekarang: 3 (BUG-05, BUG-09, NEW-01)
-Sisa kosmetik/placeholder: 4 (BUG-14, BUG-16, BUG-22 + tombol fake)
-Type check: PASS (tsc --noEmit = 0 errors)
+═══════════════════════════════════════
+  POSITIVE NOTES
+═══════════════════════════════════════
+
+- Most bugs from previous audit (May 2026) sudah fixed: middleware file naming, checkAuth pada read actions, schema nullability, kualitas chart string matching, profil lookup by ID, Zod validation untuk update santri.
+- Prisma singleton pattern sudah benar (globalThis cache).
+- DaftarHadir: infer from hafalan tidak overwrite manual records — good data priority logic.
+- getDashboardStats pakai Promise.all untuk parallel queries — good performance practice.
+- Semua server actions konsisten pakai checkAuth().
+- formatDate functions pakai Intl.DateTimeFormat — proper localization.

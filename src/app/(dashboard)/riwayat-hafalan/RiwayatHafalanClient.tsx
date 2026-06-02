@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { ColumnDef } from "@tanstack/react-table";
-import { Eye, Pencil, Trash2, Download } from "lucide-react";
+import { Eye, Pencil, Trash2 } from "lucide-react";
 import { PageHeader, DataTable, SearchInput, FilterDropdown } from "@/components/shared";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -129,16 +129,7 @@ export default function RiwayatHafalanClient({ initialData }: { initialData: any
       <PageHeader 
         title="Riwayat Hafalan" 
         subtitle="Lihat dan kelola seluruh riwayat setoran hafalan santri"
-      >
-        <Button variant="outline" className="hidden sm:flex" onClick={() => toast.success("Fitur Export Excel akan segera hadir")}>
-          <Download className="w-4 h-4 mr-2" />
-          Export Excel
-        </Button>
-        <Button onClick={() => toast.success("Fitur Export PDF akan segera hadir")}>
-          <Download className="w-4 h-4 mr-2" />
-          Export PDF
-        </Button>
-      </PageHeader>
+      />
 
       <div className="card p-6">
         <div className="flex flex-col md:flex-row gap-4 mb-6">

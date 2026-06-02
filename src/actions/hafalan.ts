@@ -11,7 +11,7 @@ export async function getRecentHafalan(limit = 10) {
 
   return await prisma.hafalan.findMany({
     where: { santri: { adminId } },
-    take: limit,
+    take: Math.min(limit, 100),
     orderBy: { createdAt: "desc" },
     include: {
       santri: true,

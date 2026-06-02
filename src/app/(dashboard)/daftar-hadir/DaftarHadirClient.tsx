@@ -30,6 +30,10 @@ export default function DaftarHadirClient({ initialData, santris, hafalans }: { 
 
   const daysInMonth = new Date(parseInt(selectedYear), parseInt(selectedMonth), 0).getDate();
   const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
+  const years = useMemo(() => {
+    const current = new Date().getFullYear();
+    return Array.from({ length: 5 }, (_, i) => current - 2 + i);
+  }, []);
 
   // Group kehadiran by santriId and day
   const matrix = useMemo(() => {
@@ -166,8 +170,9 @@ export default function DaftarHadirClient({ initialData, santris, hafalans }: { 
                 <SelectValue placeholder="Tahun" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="2026">2026</SelectItem>
-                <SelectItem value="2025">2025</SelectItem>
+                {years.map(y => (
+                  <SelectItem key={y} value={y.toString()}>{y}</SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
@@ -235,7 +240,7 @@ export default function DaftarHadirClient({ initialData, santris, hafalans }: { 
                                   </div>
                                 </TooltipTrigger>
                                 <TooltipContent>
-                                  <p>{getStatusLabel(status)} ({day} {MONTHS[Number(selectedMonth)-1]})</p>
+                                  <p>{getStatusLabel(status)} ({day} {new Intl.DateTimeFormat('id', { month: 'long' }).format(new Date(2024, Number(selectedMonth)-1))})</p>
                                 </TooltipContent>
                               </Tooltip>
                             </TooltipProvider>
@@ -284,7 +289,7 @@ export default function DaftarHadirClient({ initialData, santris, hafalans }: { 
           <DialogHeader>
             <DialogTitle>Input Kehadiran Manual</DialogTitle>
             <DialogDescription>
-              {selectedCell?.santriNama} — {selectedCell?.day} {MONTHS[parseInt(selectedMonth) - 1]} {selectedYear}
+              {selectedCell?.santriNama} — {selectedCell?.day} {new Intl.DateTimeFormat('id', { month: 'long' }).format(new Date(2024, parseInt(selectedMonth) - 1))} {selectedYear}
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={(e) => { e.preventDefault(); handleSaveKehadiran(); }}>

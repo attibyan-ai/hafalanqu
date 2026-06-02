@@ -50,7 +50,7 @@ export default function InputHafalanClient({ initialSantris }: { initialSantris:
   const handleNext = async () => {
     let fieldsToValidate: any[] = [];
     if (currentStep === 1) fieldsToValidate = ["santriId", "tanggal"];
-    if (currentStep === 2) fieldsToValidate = ["jenis", "surah", "ayatMulai", "ayatAkhir"];
+    if (currentStep === 2) fieldsToValidate = ["jenis", "surah", "ayatMulai", "ayatAkhir", "kualitas"];
     
     const isValid = await trigger(fieldsToValidate);
     if (isValid) {
@@ -77,6 +77,8 @@ export default function InputHafalanClient({ initialSantris }: { initialSantris:
       });
       toast.success("Setoran hafalan berhasil disimpan!");
       
+      setValue("santriId", "");
+      setValue("tanggal", new Date().toISOString().split("T")[0]);
       setValue("surah", "");
       setValue("ayatMulai", "");
       setValue("ayatAkhir", "");

@@ -72,18 +72,31 @@ export async function deleteMyAccount() {
   const role = (session.user as any).role;
 
   if (role === "admin") {
-    // If admin deletes account, delete everything
     const adminId = userId;
-    await prisma.hafalan.deleteMany({ where: { santri: { adminId } } });
-    await prisma.kehadiran.deleteMany({ where: { santri: { adminId } } });
-    await prisma.tes.deleteMany({ where: { santri: { adminId } } });
-    await prisma.santri.deleteMany({ where: { adminId } });
-    await prisma.halaqah.deleteMany({ where: { adminId } });
-    await prisma.setting.deleteMany({ where: { adminId } });
-    await prisma.user.deleteMany({ where: { adminId } }); // delete all ustadz
-    await prisma.user.delete({ where: { id: userId } }); // delete admin
+    await prisma.$transaction(async (tx) => {
+      // 1. Hapus data anak (hafalan, kehadiran, tes) via santri
+      await tx.hafalan.deleteMany({ where: { santri: { adminId } } });
+      await tx.kehadiran.deleteMany({ where: { santri: { adminId } } });
+      await tx.tes.deleteMany({ where: { santri: { adminId } } });
+      // 2. Hapus santri
+      await tx.santri.deleteMany({ where: { adminId } });
+      // 3. Hapus halaqah (relasi ustadzId jadi orphan — gapapa, data udah dihapus)
+      await tx.halaqah.deleteMany({ where: { adminId } });
+      // 4. Hapus setting
+      await tx.setting.deleteMany({ where: { adminId } });
+      // 5. Hapus semua ustadz (yang punya adminId = userId)
+      await tx.user.deleteMany({ where: { adminId } });
+      // 6. Hapus admin
+      await tx.user.delete({ where: { id: adminId } });
+    });
   } else {
-    // Just delete the ustadz account
-    await prisma.user.delete({ where: { id: userId } });
+    // Ustadz — reset ustadzId di halaqah sebelum delete user
+    await prisma.$transaction(async (tx) => {
+      await tx.halaqah.updateMany({
+        where: { ustadzId: userId },
+        data: { ustadzId: null },
+      });
+      await tx.user.delete({ where: { id: userId } });
+    });
   }
 }

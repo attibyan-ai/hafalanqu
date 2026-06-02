@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { FormField } from "@/components/shared";
 import { saveHasilTes } from "@/actions/tes";
+import { surahList } from "@/constants/surah";
 
 type Question = {
   id: number;
@@ -146,11 +147,17 @@ export default function QuizClient({ santris }: { santris: any[] }) {
             }
             if (attempts >= 100) continue;
             usedIndices.add(r);
-            
+
             const qAyah = ayahs[r];
             const correctSurah = qAyah.surah.name;
-            
+
             const options = [correctSurah];
+            // Ambil wrong options dari daftar 114 surah, bukan dari range target
+            for (const s of surahList) {
+              if (options.length >= 4) break;
+              if (!options.includes(s)) options.push(s);
+            }
+            // Kalo surahList gak cukup, tambah dari api response sebagai fallback
             let optAttempts = 0;
             while(options.length < 4 && optAttempts < 50) {
               const wrong = ayahs[Math.floor(Math.random() * ayahs.length)].surah.name;
@@ -212,8 +219,9 @@ export default function QuizClient({ santris }: { santris: any[] }) {
       setMode("result");
       setIsSaving(true);
       try {
+        const finalScore = scoreRef.current;
         const targetString = targetType === "juz" ? `Juz ${targetValue}` : `Surah ${targetValue}`;
-        await saveHasilTes(santriId, jenis, scoreRef.current, targetString);
+        await saveHasilTes(santriId, jenis, finalScore, targetString);
         toast.success("Hasil tes berhasil disimpan");
       } catch (e) {
         toast.error("Gagal menyimpan hasil tes");

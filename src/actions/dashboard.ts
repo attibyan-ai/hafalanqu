@@ -34,6 +34,8 @@ export async function getDashboardStats() {
     totalGuru,
     uniqueHalaqohs,
     allHafalansAdmin,
+    kehadiranThisMonth,
+    kehadiranLastMonth,
   ] = await Promise.all([
     prisma.santri.count({ where: { status: "active", adminId } }),
     prisma.hafalan.count({ where: { createdAt: { gte: today }, santri: { adminId } } }),
@@ -57,6 +59,8 @@ export async function getDashboardStats() {
     prisma.user.count({ where: { role: "ustadz", adminId } }),
     prisma.santri.findMany({ where: { status: "active", adminId }, select: { halaqah: true }, distinct: ['halaqah'] }),
     prisma.hafalan.findMany({ where: { santri: { adminId } }, include: { santri: { select: { halaqah: true } } } }),
+    prisma.kehadiran.count({ where: { tanggal: { gte: startOfThisMonth }, status: "hadir", santri: { adminId } } }),
+    prisma.kehadiran.count({ where: { tanggal: { gte: startOfLastMonth, lt: startOfThisMonth }, status: "hadir", santri: { adminId } } }),
   ]);
 
   // Rata-rata kualitas
@@ -213,7 +217,7 @@ export async function getDashboardStats() {
     trendSantri,
     trendSetoran,
     trendKualitas,
-    trendKehadiran: trendSetoran,
+    trendKehadiran: kehadiranLastMonth === 0 ? (kehadiranThisMonth > 0 ? 100 : 0) : Math.round(((kehadiranThisMonth - kehadiranLastMonth) / kehadiranLastMonth) * 100),
     recentActivities: activities,
     topSantri,
     hafalanChartData: shiftedHafalanChart,

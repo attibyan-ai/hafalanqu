@@ -29,14 +29,25 @@ export async function getAkunByRole(role: string) {
 export async function createAkun(data: { nama: string; email: string; password?: string; role: string; halaqah?: string }) {
   const session = await checkAuth();
   const adminId = (session.user as any).adminId;
+  const currentRole = (session.user as any).role;
+
+  // Guard: hanya admin yang bisa buat akun, dan tidak bisa buat admin baru
+  if (currentRole !== "admin") {
+    throw new Error("Hanya admin yang dapat membuat akun");
+  }
+  if (data.role === "admin") {
+    throw new Error("Tidak dapat membuat akun admin baru");
+  }
 
   const existing = await prisma.user.findUnique({ where: { email: data.email } });
   if (existing) {
     throw new Error("Email sudah terdaftar");
   }
 
-  const defaultPassword = data.password || "123456";
-  const hashedPassword = await bcrypt.hash(defaultPassword, 10);
+  if (!data.password || data.password.length < 8) {
+    throw new Error("Password minimal 8 karakter");
+  }
+  const hashedPassword = await bcrypt.hash(data.password, 10);
 
   await prisma.user.create({
     data: {
@@ -66,6 +77,15 @@ export async function createAkun(data: { nama: string; email: string; password?:
 export async function updateAkun(id: string, data: { nama: string; email: string; password?: string; role: string; halaqah?: string }) {
   const session = await checkAuth();
   const adminId = (session.user as any).adminId;
+  const currentRole = (session.user as any).role;
+
+  // Guard: hanya admin yang bisa edit akun, dan tidak bisa promote ke admin
+  if (currentRole !== "admin") {
+    throw new Error("Hanya admin yang dapat mengubah akun");
+  }
+  if (data.role === "admin") {
+    throw new Error("Tidak dapat mengubah akun menjadi admin");
+  }
 
   // Verifikasi kepemilikan
   const existing = await prisma.user.findFirst({ where: { id, adminId } });

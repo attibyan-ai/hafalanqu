@@ -40,6 +40,14 @@ export default withAuth(
     const token = req.nextauth.token;
     const pathname = req.nextUrl.pathname;
 
+    // Jangan redirect API routes — return JSON 401 biar client terima JSON, bukan HTML
+    if (pathname.startsWith("/api/") && !token) {
+      return new NextResponse(
+        JSON.stringify({ error: "Unauthorized" }),
+        { status: 401, headers: { "content-type": "application/json" } }
+      );
+    }
+
     // Jika pengguna tidak terautentikasi (NextAuth secara default menangani authorized)
     if (!token) {
       return NextResponse.redirect(new URL("/login", req.url));

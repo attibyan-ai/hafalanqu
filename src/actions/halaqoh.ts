@@ -86,6 +86,12 @@ export async function deleteHalaqoh(id: string) {
   const existing = await prisma.halaqah.findFirst({ where: { id, adminId } });
   if (!existing) throw new Error("Akses ditolak");
 
+  // Reset santri yang terkait ke "Umum" sebelum hapus halaqah
+  await prisma.santri.updateMany({
+    where: { halaqah: existing.nama, adminId },
+    data: { halaqah: "Umum" },
+  });
+
   await prisma.halaqah.delete({ where: { id } });
 
   revalidatePath("/master-kelas");

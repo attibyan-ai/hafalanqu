@@ -1,8 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 
 export async function GET(req: NextRequest) {
+  // Role check: hanya admin yang bisa akses
+  const session = await getServerSession(authOptions);
+  if (!session || (session.user as any)?.role !== "admin") {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
   const { searchParams } = new URL(req.url);
   
   // Mengambil parameter dari URL Query String
