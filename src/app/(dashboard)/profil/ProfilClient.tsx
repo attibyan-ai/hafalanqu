@@ -39,7 +39,7 @@ export default function ProfilClient({ user }: { user: any }) {
   const formProfile = useForm<z.infer<typeof profileSchema>>({
     resolver: zodResolver(profileSchema),
     defaultValues: {
-      nama: user?.name || "",
+      nama: user?.nama || user?.name || "",
       email: user?.email || "",
       noHp: user?.noHp || "",
       alamat: user?.alamat || "",
@@ -90,7 +90,7 @@ export default function ProfilClient({ user }: { user: any }) {
               <div className="relative group cursor-pointer">
                 <Avatar className="h-28 w-28 border-4 border-white shadow-soft">
                   <AvatarFallback className="bg-primary-50 text-primary text-2xl">
-                    {getInitials(user?.name || "U")}
+                    {getInitials(user?.nama || user?.name || "U")}
                   </AvatarFallback>
                 </Avatar>
                 <div className="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
@@ -98,7 +98,7 @@ export default function ProfilClient({ user }: { user: any }) {
                 </div>
               </div>
               <div className="text-center sm:text-left">
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-50">{user?.name || "User"}</h2>
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-50">{user?.nama || user?.name || "User"}</h2>
                 <div className="flex items-center justify-center sm:justify-start gap-3 mt-2 mb-3">
                   <Badge className={getRoleBadgeColor(user?.role || "ustadz")} variant="outline">
                     {getRoleLabel(user?.role || "ustadz")}
