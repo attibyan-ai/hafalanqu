@@ -1,18 +1,17 @@
-import { getSantris } from "@/actions/santri";
-import { getHalaqoh } from "@/actions/halaqoh";
-import ManajemenSantriClient from "./ManajemenSantriClient";
+import { getAkunByRole } from "@/actions/akun";
+import AkunClient from "./AkunClient";
 
 export const dynamic = "force-dynamic";
 
 export default async function ManajemenSantriPage() {
-  const santriList = await getSantris();
-  const halaqohs = await getHalaqoh();
-  const halaqahNames = halaqohs.map(h => h.nama);
+  const santriList = await getAkunByRole("santri");
 
   return (
-    <ManajemenSantriClient 
-      initialData={santriList} 
-      halaqahList={halaqahNames}
+    <AkunClient 
+      akuns={santriList} 
+      title="Manajemen Akun Santri"
+      subtitle="Kelola akun akses login untuk para santri"
+      defaultRole="santri"
     />
   );
 }
