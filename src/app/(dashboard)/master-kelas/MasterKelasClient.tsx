@@ -146,9 +146,8 @@ export default function MasterKelasClient({ halaqohs, ustadzList }: MasterKelasC
                     <td className="px-4 py-3 text-right">
                       <div className="flex justify-end gap-2">
                         <Link href={`/manajemen-santri?halaqoh=${encodeURIComponent(halaqoh.nama)}`}>
-                          <Button variant="outline" size="sm" className="gap-2 h-8">
+                          <Button variant="outline" size="icon">
                             <Users className="w-4 h-4 text-emerald-600" />
-                            <span className="hidden sm:inline">Kelola Santri</span>
                           </Button>
                         </Link>
                         <Button variant="outline" size="icon" onClick={() => handleOpenModal(halaqoh)}>

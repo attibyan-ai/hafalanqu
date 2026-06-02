@@ -26,7 +26,7 @@ export async function getAkunByRole(role: string) {
   });
 }
 
-export async function createAkun(data: { nama: string; email: string; password?: string; role: string }) {
+export async function createAkun(data: { nama: string; email: string; password?: string; role: string; halaqah?: string }) {
   const session = await checkAuth();
   const adminId = (session.user as any).adminId;
 
@@ -48,11 +48,24 @@ export async function createAkun(data: { nama: string; email: string; password?:
     },
   });
 
+  if (data.role === "santri" && data.halaqah) {
+    const randomNis = "S-" + Math.floor(1000 + Math.random() * 9000);
+    await prisma.santri.create({
+      data: {
+        nama: data.nama,
+        nis: randomNis,
+        halaqah: data.halaqah,
+        targetJuz: 30,
+        adminId,
+      }
+    });
+  }
+
   revalidatePath("/manajemen-ustadz");
   revalidatePath("/manajemen-santri");
 }
 
-export async function updateAkun(id: string, data: { nama: string; email: string; password?: string; role: string }) {
+export async function updateAkun(id: string, data: { nama: string; email: string; password?: string; role: string; halaqah?: string }) {
   const session = await checkAuth();
   const adminId = (session.user as any).adminId;
 
@@ -74,6 +87,19 @@ export async function updateAkun(id: string, data: { nama: string; email: string
     where: { id },
     data: updateData,
   });
+
+  if (data.role === "santri" && data.halaqah) {
+    // Attempt to find santri by name and adminId, since we didn't link them by ID
+    const santri = await prisma.santri.findFirst({
+      where: { nama: existing.nama, adminId }
+    });
+    if (santri) {
+      await prisma.santri.update({
+        where: { id: santri.id },
+        data: { halaqah: data.halaqah, nama: data.nama }
+      });
+    }
+  }
 
   revalidatePath("/manajemen-ustadz");
   revalidatePath("/manajemen-santri");

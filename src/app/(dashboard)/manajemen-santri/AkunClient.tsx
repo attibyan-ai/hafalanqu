@@ -25,13 +25,14 @@ interface AkunClientProps {
   title: string;
   subtitle: string;
   defaultRole: string;
+  halaqohList?: string[];
 }
 
-export default function AkunClient({ akuns, title, subtitle, defaultRole }: AkunClientProps) {
+export default function AkunClient({ akuns, title, subtitle, defaultRole, halaqohList }: AkunClientProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [formData, setFormData] = useState({ id: "", nama: "", email: "", password: "", role: defaultRole });
+  const [formData, setFormData] = useState({ id: "", nama: "", email: "", password: "", role: defaultRole, halaqah: "" });
 
   const filteredAkun = akuns.filter(a => 
     a.nama.toLowerCase().includes(searchQuery.toLowerCase()) || 
@@ -40,9 +41,11 @@ export default function AkunClient({ akuns, title, subtitle, defaultRole }: Akun
 
   const handleOpenModal = (akun?: any) => {
     if (akun) {
-      setFormData({ id: akun.id, nama: akun.nama, email: akun.email, password: "", role: akun.role });
+      // Find matching halaqah from santri table? We don't have it in user table. 
+      // But we can just leave it empty on edit for now, or fetch it.
+      setFormData({ id: akun.id, nama: akun.nama, email: akun.email, password: "", role: akun.role, halaqah: "" });
     } else {
-      setFormData({ id: "", nama: "", email: "", password: "", role: defaultRole });
+      setFormData({ id: "", nama: "", email: "", password: "", role: defaultRole, halaqah: "" });
     }
     setIsModalOpen(true);
   };
@@ -178,6 +181,21 @@ export default function AkunClient({ akuns, title, subtitle, defaultRole }: Akun
               <Label>Peran (Role)</Label>
               <Input value={formData.role} readOnly />
             </div>
+            {defaultRole === "santri" && halaqohList && (
+              <div className="space-y-2">
+                <Label>Halaqah {formData.id && "(Kosongkan jika tidak diubah)"}</Label>
+                <Select value={formData.halaqah} onValueChange={v => setFormData({...formData, halaqah: v})}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Pilih Halaqah" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {halaqohList.map(h => (
+                      <SelectItem key={h} value={h}>{h}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
             <DialogFooter className="pt-4">
               <Button type="button" variant="outline" onClick={() => setIsModalOpen(false)}>Batal</Button>
               <Button type="submit" disabled={isSubmitting}>{isSubmitting ? "Menyimpan..." : "Simpan Akun"}</Button>
