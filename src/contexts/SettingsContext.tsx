@@ -7,7 +7,6 @@ interface Setting {
   bahasa: string;
   namaLembaga: string;
   tahunAjaran: string;
-  notifWa: boolean;
 }
 
 const SettingsContext = createContext<Setting | null>(null);
