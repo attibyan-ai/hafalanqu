@@ -122,7 +122,13 @@ export default function DashboardClient({ stats }: DashboardClientProps) {
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
               <ChartCard title="Aktivitas Input per Halaqoh">
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={stats.adminChartAktivitas || []} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                  <AreaChart data={stats.adminChartAktivitas || []} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                    <defs>
+                      <linearGradient id="colorAktivitas" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#0F7B53" stopOpacity={0.3}/>
+                        <stop offset="95%" stopColor="#0F7B53" stopOpacity={0}/>
+                      </linearGradient>
+                    </defs>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5E7EB" />
                     <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#6B7280', fontSize: 12}} dy={10} />
                     <YAxis axisLine={false} tickLine={false} tick={{fill: '#6B7280', fontSize: 12}} />
@@ -130,28 +136,35 @@ export default function DashboardClient({ stats }: DashboardClientProps) {
                       contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 20px -4px rgba(0,0,0,0.1)' }}
                       labelStyle={{ fontWeight: 'bold', color: '#111827', marginBottom: '8px' }}
                     />
-                    <Bar dataKey="total" name="Total Setoran" fill="#0F7B53" radius={[4, 4, 0, 0]} />
-                  </BarChart>
+                    <Area type="monotone" dataKey="total" name="Total Setoran" stroke="#0F7B53" strokeWidth={3} fillOpacity={1} fill="url(#colorAktivitas)" />
+                  </AreaChart>
                 </ResponsiveContainer>
               </ChartCard>
             </motion.div>
 
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
-              <ChartCard title="Distribusi Kualitas per Halaqoh">
+              <ChartCard title="Distribusi Kualitas Global">
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={stats.adminChartKualitas || []} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5E7EB" />
-                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#6B7280', fontSize: 12}} dy={10} />
-                    <YAxis axisLine={false} tickLine={false} tick={{fill: '#6B7280', fontSize: 12}} />
+                  <PieChart>
+                    <Pie
+                      data={stats.kualitasChartData}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={80}
+                      outerRadius={110}
+                      paddingAngle={2}
+                      dataKey="value"
+                    >
+                      {stats.kualitasChartData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.fill} />
+                      ))}
+                    </Pie>
                     <RechartsTooltip 
+                      formatter={(value: number) => [`${value}%`, 'Persentase']}
                       contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 20px -4px rgba(0,0,0,0.1)' }}
-                      labelStyle={{ fontWeight: 'bold', color: '#111827', marginBottom: '8px' }}
                     />
                     <Legend verticalAlign="bottom" height={36} iconType="circle" />
-                    <Bar dataKey="Mumtaz" stackId="a" fill="#0F7B53" />
-                    <Bar dataKey="Jayyid" stackId="a" fill="#3B82F6" />
-                    <Bar dataKey="Maqbul" stackId="a" fill="#F59E0B" radius={[4, 4, 0, 0]} />
-                  </BarChart>
+                  </PieChart>
                 </ResponsiveContainer>
               </ChartCard>
             </motion.div>
