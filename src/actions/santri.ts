@@ -101,7 +101,7 @@ export async function createSantri(data: { nama: string; nis: string; halaqah: s
       adminId,
     },
   });
-  revalidatePath("/master-kelas", "layout");
+  revalidatePath("/manajemen-santri");
 }
 
 const updateSantriSchema = z.object({
@@ -120,7 +120,7 @@ export async function updateSantri(id: string, data: { nama?: string; halaqah?: 
     where: { id, adminId },
     data: parsed,
   });
-  revalidatePath("/master-kelas", "layout");
+  revalidatePath("/manajemen-santri");
 }
 
 export async function deleteSantri(id: string) {
@@ -130,5 +130,5 @@ export async function deleteSantri(id: string) {
   await prisma.santri.delete({
     where: { id, adminId },
   });
-  revalidatePath("/master-kelas", "layout");
+  revalidatePath("/manajemen-santri");
 }

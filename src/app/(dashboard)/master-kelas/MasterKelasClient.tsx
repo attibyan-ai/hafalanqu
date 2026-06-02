@@ -145,7 +145,7 @@ export default function MasterKelasClient({ halaqohs, ustadzList }: MasterKelasC
                     <td className="px-4 py-3 text-muted-foreground">{formatDateShort(halaqoh.createdAt.toISOString())}</td>
                     <td className="px-4 py-3 text-right">
                       <div className="flex justify-end gap-2">
-                        <Link href={`/master-kelas/${halaqoh.id}`}>
+                        <Link href={`/manajemen-santri?halaqoh=${encodeURIComponent(halaqoh.nama)}`}>
                           <Button variant="outline" size="sm" className="gap-2 h-8">
                             <Users className="w-4 h-4 text-emerald-600" />
                             <span className="hidden sm:inline">Kelola Santri</span>
