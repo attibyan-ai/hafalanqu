@@ -41,7 +41,7 @@ export async function getDashboardStats() {
     prisma.hafalan.count({ where: { createdAt: { gte: today }, santri: { adminId } } }),
     prisma.hafalan.findMany({ where: { createdAt: { gte: startOfLastMonth }, santri: { adminId } } }),
     prisma.kehadiran.findMany({ where: { tanggal: { gte: today }, santri: { adminId } } }),
-    prisma.hafalan.findMany({ where: { createdAt: { gte: today }, santri: { adminId } } }),
+    prisma.hafalan.findMany({ where: { createdAt: { gte: today }, santri: { adminId } }, include: { santri: { select: { halaqah: true } } } }),
     prisma.hafalan.findMany({
       where: { santri: { adminId } },
       take: 5,
@@ -164,12 +164,16 @@ export async function getDashboardStats() {
 
   // Admin Charts
   const totalHalaqoh = uniqueHalaqohs.length;
-  const aktivitasMap = new Map<string, number>();
+  const aktivitasMap = new Map<string, { ziyadah: number, murajaah: number }>();
   const kMap = new Map<string, { mumtaz: number, jayyid: number, maqbul: number }>();
 
   allHafalansAdmin.forEach(h => {
     const hq = h.santri?.halaqah || "Umum";
-    aktivitasMap.set(hq, (aktivitasMap.get(hq) || 0) + 1);
+    
+    if (!aktivitasMap.has(hq)) aktivitasMap.set(hq, { ziyadah: 0, murajaah: 0 });
+    const actStat = aktivitasMap.get(hq)!;
+    if (h.jenis.toLowerCase() === "ziyadah") actStat.ziyadah += 1;
+    else actStat.murajaah += 1;
     
     if (!kMap.has(hq)) kMap.set(hq, { mumtaz: 0, jayyid: 0, maqbul: 0 });
     const stat = kMap.get(hq)!;
@@ -179,7 +183,11 @@ export async function getDashboardStats() {
     else stat.maqbul += 1;
   });
 
-  const adminChartAktivitas = Array.from(aktivitasMap.entries()).map(([name, total]) => ({ name, total }));
+  const adminChartAktivitas = Array.from(aktivitasMap.entries()).map(([name, stats]) => ({ 
+    name, 
+    ziyadah: stats.ziyadah, 
+    murajaah: stats.murajaah 
+  }));
   const adminChartKualitas = Array.from(kMap.entries()).map(([name, stats]) => ({
     name,
     "Mumtaz": stats.mumtaz,
@@ -187,14 +195,30 @@ export async function getDashboardStats() {
     "Maqbul": stats.maqbul,
   }));
 
-  const adminRecentActivities = recentActivities.map(h => ({
-    id: h.id,
-    santriNama: `Halaqoh ${h.santri?.halaqah || "Umum"}`,
-    action: `Input ${h.jenis.toLowerCase() === "ziyadah" ? "Ziyadah" : "Muraja'ah"}`,
-    detail: `Santri: ${h.santri.nama} - ${h.surah} (${h.kualitas})`,
-    timestamp: h.createdAt.toISOString(),
-    avatar: null,
-  }));
+  const recentHalaqohMap = new Map<string, { ziyadahAyat: number, murajaahAyat: number, latestTime: Date }>();
+  hafalansToday.forEach(h => {
+    const hq = h.santri?.halaqah || "Umum";
+    if (!recentHalaqohMap.has(hq)) recentHalaqohMap.set(hq, { ziyadahAyat: 0, murajaahAyat: 0, latestTime: h.createdAt });
+    
+    const stat = recentHalaqohMap.get(hq)!;
+    const count = Math.max(0, h.ayatAkhir - h.ayatMulai + 1);
+    if (h.jenis.toLowerCase() === "ziyadah") stat.ziyadahAyat += count;
+    else stat.murajaahAyat += count;
+    
+    if (h.createdAt > stat.latestTime) stat.latestTime = h.createdAt;
+  });
+
+  const adminRecentActivities = Array.from(recentHalaqohMap.entries())
+    .sort((a, b) => b[1].latestTime.getTime() - a[1].latestTime.getTime())
+    .slice(0, 5)
+    .map(([name, stat], idx) => ({
+      id: `admin-recent-${idx}`,
+      santriNama: `Halaqoh ${name}`,
+      action: "Rekap Hari Ini",
+      detail: `Ziyadah ${stat.ziyadahAyat} ayat, Murajaah ${stat.murajaahAyat} ayat`,
+      timestamp: stat.latestTime.toISOString(),
+      avatar: null,
+    }));
 
   const halaqohScores = new Map<string, number>();
   allHafalansAdmin.forEach(h => {
