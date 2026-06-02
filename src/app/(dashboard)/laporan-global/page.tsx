@@ -1,23 +1,10 @@
-"use client";
+import { getLaporanGlobal } from "@/actions/laporan";
+import LaporanGlobalClient from "./LaporanGlobalClient";
 
-import { EmptyState } from "@/components/shared/EmptyState";
-import { PageHeader } from "@/components/shared/PageHeader";
-import { FileBarChart2 } from "lucide-react";
+export const dynamic = "force-dynamic";
 
-export default function LaporanGlobalPage() {
-  return (
-    <div className="space-y-6">
-      <PageHeader 
-        title="Laporan Global" 
-        subtitle="Lihat laporan performa seluruh santri di lembaga" 
-      />
-      <div className="card">
-        <EmptyState 
-          icon={FileBarChart2} 
-          title="Segera Hadir" 
-          description="Fitur Laporan Global sedang dalam tahap pengembangan." 
-        />
-      </div>
-    </div>
-  );
+export default async function LaporanGlobalPage() {
+  const laporanData = await getLaporanGlobal();
+  
+  return <LaporanGlobalClient initialData={laporanData} />;
 }
