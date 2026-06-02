@@ -35,7 +35,7 @@ export function AppSidebar() {
       animate={{ width: isCollapsed ? "5rem" : "18rem" }}
       className="hidden md:flex flex-col h-screen fixed top-0 left-0 bg-dark text-white shadow-xl z-40 transition-all duration-300"
     >
-      <div className="flex items-center justify-between p-6">
+      <div className={cn("flex items-center p-6", isCollapsed ? "flex-col justify-center" : "justify-between")}>
         <AnimatePresence mode="wait">
           {!isCollapsed && (
             <motion.div
@@ -53,25 +53,37 @@ export function AppSidebar() {
         </AnimatePresence>
 
         {isCollapsed && (
-          <div className="w-full flex justify-center mb-4">
-            <div className="bg-primary/20 p-2 rounded-xl text-primary-100">
-              <BookOpen className="w-6 h-6" />
-            </div>
-          </div>
+          <Tooltip delayDuration={150}>
+            <TooltipTrigger asChild>
+              <div 
+                onClick={expand}
+                className="w-full flex justify-center cursor-pointer group mt-2"
+              >
+                <div className="bg-primary/20 p-2 rounded-xl text-primary-100 group-hover:hidden transition-all duration-200">
+                  <BookOpen className="w-6 h-6" />
+                </div>
+                <div className="hidden group-hover:flex bg-primary p-2 rounded-xl text-white transition-all duration-200 shadow-glow-primary">
+                  <ChevronRight className="w-6 h-6" />
+                </div>
+              </div>
+            </TooltipTrigger>
+            <TooltipContent side="right" className="bg-dark border-white/10 text-white ml-2">
+              Buka Sidebar
+            </TooltipContent>
+          </Tooltip>
         )}
 
-        <button
-          onClick={toggle}
-          className={cn(
-            "p-1.5 rounded-lg bg-white/5 hover:bg-white/10 transition-colors text-gray-400 hover:text-white",
-            isCollapsed ? "absolute right-0 top-6 translate-x-1/2 bg-dark border border-white/10" : ""
-          )}
-        >
-          {isCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-5 h-5" />}
-        </button>
-        <div className={cn("flex", isCollapsed ? "hidden" : "")}>
-          <ThemeToggle />
-        </div>
+        {!isCollapsed && (
+          <div className="flex items-center gap-2 shrink-0">
+            <ThemeToggle />
+            <button
+              onClick={collapse}
+              className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 transition-colors text-gray-400 hover:text-white"
+            >
+              <ChevronLeft className="w-5 h-5" />
+            </button>
+          </div>
+        )}
       </div>
 
       <div className="flex-1 overflow-y-auto px-4 py-2 space-y-1 scrollbar-hidden">
