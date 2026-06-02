@@ -91,3 +91,14 @@ model Tes {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
+
+model Setting {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  adminId      String   @unique @db.ObjectId
+  namaLembaga  String   @default("Pesantren Tahfidz HafalanQu")
+  tahunAjaran  String   @default("2025/2026 Ganjil")
+  zonaWaktu    String   @default("wib")
+  bahasa       String   @default("id")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
