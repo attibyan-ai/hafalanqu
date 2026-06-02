@@ -36,7 +36,6 @@ model Halaqah {
 model Santri {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
   nama      String
-  nis       String   @unique
   halaqah   String   @default("Umum")
   status    String   @default("active") // active, inactive
   targetJuz Int      @default(30)

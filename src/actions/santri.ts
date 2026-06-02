@@ -29,7 +29,6 @@ export async function getSantris() {
     return {
       id: s.id,
       nama: s.nama,
-      nis: s.nis,
       halaqah: s.halaqah,
       targetJuz: s.targetJuz,
       status: s.status,
@@ -68,7 +67,6 @@ export async function getSantrisByHalaqoh(halaqohName: string) {
     return {
       id: s.id,
       nama: s.nama,
-      nis: s.nis,
       halaqah: s.halaqah,
       targetJuz: s.targetJuz,
       status: s.status,
@@ -85,12 +83,11 @@ export async function getSantrisByHalaqoh(halaqohName: string) {
 
 const santriSchema = z.object({
   nama: z.string().min(3),
-  nis: z.string().min(3),
   halaqah: z.string().min(1),
   targetJuz: z.number().min(1).max(30),
 });
 
-export async function createSantri(data: { nama: string; nis: string; halaqah: string; targetJuz: number }) {
+export async function createSantri(data: { nama: string; halaqah: string; targetJuz: number }) {
   const session = await checkAuth();
   const adminId = (session.user as any).adminId;
 

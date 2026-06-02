@@ -2,7 +2,6 @@
 export interface Santri {
   id: string;
   nama: string;
-  nis: string;
   halaqah: string;
   noHp?: string;
   alamat?: string;

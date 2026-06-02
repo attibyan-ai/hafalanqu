@@ -49,11 +49,9 @@ export async function createAkun(data: { nama: string; email: string; password?:
   });
 
   if (data.role === "santri" && data.halaqah) {
-    const randomNis = "S-" + Math.floor(1000 + Math.random() * 9000);
     await prisma.santri.create({
       data: {
         nama: data.nama,
-        nis: randomNis,
         halaqah: data.halaqah,
         targetJuz: 30,
         adminId,

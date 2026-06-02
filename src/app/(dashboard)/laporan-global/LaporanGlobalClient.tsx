@@ -25,7 +25,6 @@ export default function LaporanGlobalClient({ initialData }: LaporanGlobalClient
       const q = searchQuery.toLowerCase();
       return (
         item.santriNama.toLowerCase().includes(q) ||
-        item.santriNis.toLowerCase().includes(q) ||
         item.halaqah.toLowerCase().includes(q)
       );
     }
@@ -54,7 +53,6 @@ export default function LaporanGlobalClient({ initialData }: LaporanGlobalClient
       "Tanggal": formatDateShort(new Date(item.tanggal).toISOString()),
       "Tipe Aktivitas": item.type.toUpperCase(),
       "Halaqah": item.halaqah,
-      "NIS": item.santriNis,
       "Nama Santri": item.santriNama,
       "Detail": item.detailSingkat,
       "Status/Predikat": item.kualitasAtauStatus
@@ -83,7 +81,7 @@ export default function LaporanGlobalClient({ initialData }: LaporanGlobalClient
           <SearchInput 
             value={searchQuery}
             onChange={setSearchQuery}
-            placeholder="Cari nama santri, NIS, atau halaqoh..."
+            placeholder="Cari nama santri atau halaqoh..."
             className="w-full md:w-80"
           />
           <div className="w-full md:w-auto">
@@ -140,7 +138,6 @@ export default function LaporanGlobalClient({ initialData }: LaporanGlobalClient
                     </td>
                     <td className="px-4 py-3">
                       <p className="font-semibold text-dark">{item.santriNama}</p>
-                      <p className="text-xs text-muted-foreground">NIS: {item.santriNis}</p>
                     </td>
                     <td className="px-4 py-3 font-medium">{item.halaqah}</td>
                     <td className="px-4 py-3 max-w-xs truncate" title={item.detailSingkat}>

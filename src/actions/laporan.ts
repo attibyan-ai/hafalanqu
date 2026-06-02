@@ -7,7 +7,6 @@ export type LaporanItem = {
   id: string;
   type: "hafalan" | "kehadiran" | "tes";
   santriNama: string;
-  santriNis: string;
   halaqah: string;
   tanggal: Date;
   detailSingkat: string;
@@ -25,7 +24,6 @@ export async function getLaporanGlobal(): Promise<LaporanItem[]> {
     select: {
       id: true,
       nama: true,
-      nis: true,
       halaqah: true,
     }
   });
@@ -62,7 +60,6 @@ export async function getLaporanGlobal(): Promise<LaporanItem[]> {
       id: `hafalan-${h.id}`,
       type: "hafalan",
       santriNama: s.nama,
-      santriNis: s.nis,
       halaqah: s.halaqah,
       tanggal: h.tanggal,
       detailSingkat: `${h.jenis === "ziyadah" ? "Ziyadah" : "Murajaah"} Surah ${h.surah} Ayat ${h.ayatMulai}-${h.ayatAkhir}`,
@@ -78,7 +75,6 @@ export async function getLaporanGlobal(): Promise<LaporanItem[]> {
       id: `hadir-${k.id}`,
       type: "kehadiran",
       santriNama: s.nama,
-      santriNis: s.nis,
       halaqah: s.halaqah,
       tanggal: k.tanggal,
       detailSingkat: `Absensi Kehadiran`,
@@ -94,7 +90,6 @@ export async function getLaporanGlobal(): Promise<LaporanItem[]> {
       id: `tes-${t.id}`,
       type: "tes",
       santriNama: s.nama,
-      santriNis: s.nis,
       halaqah: s.halaqah,
       tanggal: t.tanggal,
       detailSingkat: `Ujian ${t.jenis} (${t.target}) Nilai: ${t.nilai}`,
