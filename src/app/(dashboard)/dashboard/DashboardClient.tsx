@@ -98,9 +98,9 @@ export default function DashboardClient({ stats }: DashboardClientProps) {
           animate="show"
           className="grid grid-cols-1 sm:grid-cols-3 gap-6"
         >
-          <StatCard title="Total Guru" value={stats.totalGuru || 0} trend={0} icon={UserCog} color="info" />
-          <StatCard title="Total Halaqoh" value={stats.totalHalaqoh || 0} trend={0} icon={ClipboardList} color="warning" />
-          <StatCard title="Total Santri" value={stats.totalSantri} trend={stats.trendSantri} icon={Users} color="primary" />
+          <StatCard title="Total Guru" value={stats.totalGuru || 0} icon={UserCog} color="info" />
+          <StatCard title="Total Halaqoh" value={stats.totalHalaqoh || 0} icon={ClipboardList} color="warning" />
+          <StatCard title="Total Santri" value={stats.totalSantri} icon={Users} color="primary" />
         </motion.div>
       ) : (
         <motion.div 
