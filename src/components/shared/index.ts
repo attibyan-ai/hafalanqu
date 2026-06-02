@@ -11,3 +11,4 @@ export * from "./FormField";
 export * from "./SubmitButton";
 export * from "./DataTable";
 export * from "./ThemeToggle";
+export * from "./ConfirmDialog";

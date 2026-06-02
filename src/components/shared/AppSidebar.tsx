@@ -14,12 +14,14 @@ import { useSession } from "next-auth/react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { ThemeToggle } from "./ThemeToggle";
+import { useSettings } from "@/contexts/SettingsContext";
 
 export function AppSidebar() {
   const pathname = usePathname();
   const isTablet = useIsTablet();
   const { isCollapsed, toggle, collapse, expand } = useSidebarStore();
   const { data: session } = useSession();
+  const { namaLembaga } = useSettings();
 
   useEffect(() => {
     if (isTablet) {
@@ -47,7 +49,7 @@ export function AppSidebar() {
               <div className="bg-primary/20 p-2 rounded-xl text-primary-100">
                 <BookOpen className="w-6 h-6" />
               </div>
-              <span className="font-bold text-xl whitespace-nowrap tracking-tight">HafalanQu</span>
+              <span className="font-bold text-lg whitespace-nowrap tracking-tight">{namaLembaga}</span>
             </motion.div>
           )}
         </AnimatePresence>

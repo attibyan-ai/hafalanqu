@@ -99,6 +99,7 @@ model Setting {
   tahunAjaran  String   @default("2025/2026 Ganjil")
   zonaWaktu    String   @default("wib")
   bahasa       String   @default("id")
+  notifWa      Boolean  @default(false)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 }

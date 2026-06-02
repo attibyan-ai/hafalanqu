@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { formatDate, getKualitasColor, getKualitasLabel } from "@/lib/utils";
 import { deleteHafalan } from "@/actions/hafalan";
 import { toast } from "sonner";
+import { useSettings } from "@/contexts/SettingsContext";
 
 interface HafalanData {
   id: string;
@@ -23,11 +24,15 @@ interface HafalanData {
   kualitas: string;
 }
 
-const columns = (onDelete: (id: string) => void): ColumnDef<HafalanData>[] => [
+const columns = (
+  onDelete: (id: string) => void, 
+  locale: string, 
+  timezone: string
+): ColumnDef<HafalanData>[] => [
   {
     accessorKey: "tanggal",
     header: "Tanggal",
-    cell: ({ row }) => <span className="font-medium">{formatDate(row.original.tanggal.toISOString())}</span>,
+    cell: ({ row }) => <span className="font-medium">{formatDate(row.original.tanggal.toISOString(), locale, timezone)}</span>,
   },
   {
     accessorKey: "santriNama",
@@ -78,6 +83,8 @@ export default function RiwayatHafalanClient({ initialData }: { initialData: any
   const [globalFilter, setGlobalFilter] = useState("");
   const [jenisFilter, setJenisFilter] = useState("all");
   const [kualitasFilter, setKualitasFilter] = useState("all");
+  
+  const { bahasa, zonaWaktu } = useSettings();
   
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -167,7 +174,7 @@ export default function RiwayatHafalanClient({ initialData }: { initialData: any
         </div>
 
         <DataTable 
-          columns={columns(handleDelete)} 
+          columns={columns(handleDelete, bahasa, zonaWaktu)} 
           data={filteredData} 
           globalFilter={globalFilter}
           setGlobalFilter={setGlobalFilter}

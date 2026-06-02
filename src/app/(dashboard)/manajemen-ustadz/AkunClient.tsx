@@ -8,10 +8,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { PageHeader } from "@/components/shared/PageHeader";
+import { PageHeader, ConfirmDialog } from "@/components/shared";
 import { createAkun, updateAkun, deleteAkun } from "@/actions/akun";
 import { toast } from "sonner";
 import { formatDateShort } from "@/lib/utils";
+import { useSettings } from "@/contexts/SettingsContext";
 
 interface AkunClientProps {
   akuns: Array<{
@@ -31,7 +32,9 @@ export default function AkunClient({ akuns, title, subtitle, defaultRole }: Akun
   const [searchQuery, setSearchQuery] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
   const [formData, setFormData] = useState({ id: "", nama: "", email: "", password: "", role: defaultRole });
+  const { bahasa, zonaWaktu } = useSettings();
 
   const filteredAkun = akuns.filter(a => 
     a.nama.toLowerCase().includes(searchQuery.toLowerCase()) || 
@@ -66,14 +69,14 @@ export default function AkunClient({ akuns, title, subtitle, defaultRole }: Akun
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (confirm("Apakah Anda yakin ingin menghapus akun ini?")) {
-      try {
-        await deleteAkun(id);
-        toast.success("Akun berhasil dihapus!");
-      } catch (error: any) {
-        toast.error("Gagal menghapus akun");
-      }
+  const handleDelete = async () => {
+    if (!deleteId) return;
+    try {
+      await deleteAkun(deleteId);
+      toast.success("Akun berhasil dihapus!");
+      setDeleteId(null);
+    } catch (error: any) {
+      toast.error("Gagal menghapus akun");
     }
   };
 
@@ -127,13 +130,13 @@ export default function AkunClient({ akuns, title, subtitle, defaultRole }: Akun
                   >
                     <td className="px-4 py-3 font-medium text-dark">{akun.nama}</td>
                     <td className="px-4 py-3">{akun.email}</td>
-                    <td className="px-4 py-3 text-muted-foreground">{formatDateShort(akun.createdAt.toISOString())}</td>
+                    <td className="px-4 py-3 text-muted-foreground">{formatDateShort(akun.createdAt.toISOString(), bahasa, zonaWaktu)}</td>
                     <td className="px-4 py-3 text-right">
                       <div className="flex justify-end gap-2">
                         <Button variant="outline" size="icon" onClick={() => handleOpenModal(akun)}>
                           <Edit className="w-4 h-4 text-blue-600" />
                         </Button>
-                        <Button variant="outline" size="icon" onClick={() => handleDelete(akun.id)}>
+                        <Button variant="outline" size="icon" onClick={() => setDeleteId(akun.id)}>
                           <Trash2 className="w-4 h-4 text-red-600" />
                         </Button>
                       </div>
@@ -175,6 +178,15 @@ export default function AkunClient({ akuns, title, subtitle, defaultRole }: Akun
           </form>
         </DialogContent>
       </Dialog>
+
+      <ConfirmDialog 
+        isOpen={!!deleteId}
+        onClose={() => setDeleteId(null)}
+        onConfirm={handleDelete}
+        title="Hapus Akun"
+        description="Apakah Anda yakin ingin menghapus akun ini?"
+        isDanger={true}
+      />
     </div>
   );
 }

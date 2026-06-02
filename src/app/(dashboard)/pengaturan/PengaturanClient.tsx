@@ -6,20 +6,36 @@ import { toast } from "sonner";
 import { AlertTriangle, Globe, MapPin, Building, CalendarDays } from "lucide-react";
 import { signOut } from "next-auth/react";
 
-import { PageHeader, FormField, SubmitButton } from "@/components/shared";
+import { PageHeader, FormField, SubmitButton, ConfirmDialog } from "@/components/shared";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { updateSetting, resetAllData, deleteMyAccount } from "@/actions/pengaturan";
 
 export default function PengaturanClient({ setting }: { setting: any }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [confirmDialog, setConfirmDialog] = useState<{
+    isOpen: boolean;
+    title: string;
+    description: string;
+    isDanger: boolean;
+    onConfirm: () => void;
+  }>({
+    isOpen: false,
+    title: "",
+    description: "",
+    isDanger: true,
+    onConfirm: () => {},
+  });
+
   const [formData, setFormData] = useState({
     namaLembaga: setting?.namaLembaga || "Pesantren Tahfidz HafalanQu",
     tahunAjaran: setting?.tahunAjaran || "2025/2026 Ganjil",
     zonaWaktu: setting?.zonaWaktu || "wib",
     bahasa: setting?.bahasa || "id",
+    notifWa: setting?.notifWa || false,
   });
 
   const handleSave = async () => {
@@ -35,26 +51,42 @@ export default function PengaturanClient({ setting }: { setting: any }) {
   };
 
   const handleReset = async () => {
-    if (confirm("PERINGATAN: Semua data santri, hafalan, kehadiran, dan tes akan dihapus secara permanen. Anda yakin?")) {
-      try {
-        await resetAllData();
-        toast.success("Semua data berhasil dikosongkan");
-      } catch (e: any) {
-        toast.error(e.message || "Gagal mengosongkan data");
+    setConfirmDialog({
+      isOpen: true,
+      title: "Kosongkan Semua Data",
+      description: "PERINGATAN: Semua data santri, hafalan, kehadiran, dan tes akan dihapus secara permanen. Anda yakin?",
+      isDanger: true,
+      onConfirm: async () => {
+        try {
+          await resetAllData();
+          toast.success("Semua data berhasil dikosongkan");
+        } catch (e: any) {
+          toast.error(e.message || "Gagal mengosongkan data");
+        } finally {
+          setConfirmDialog(prev => ({ ...prev, isOpen: false }));
+        }
       }
-    }
+    });
   };
 
   const handleDeleteAccount = async () => {
-    if (confirm("PERINGATAN Keras: Akun Anda akan dihapus permanen. Jika Anda admin, seluruh sistem dan data untuk lembaga Anda akan terhapus. Lanjutkan?")) {
-      try {
-        await deleteMyAccount();
-        toast.success("Akun berhasil dihapus");
-        signOut({ callbackUrl: "/login" });
-      } catch (e: any) {
-        toast.error(e.message || "Gagal menghapus akun");
+    setConfirmDialog({
+      isOpen: true,
+      title: "Hapus Akun Saya",
+      description: "PERINGATAN Keras: Akun Anda akan dihapus permanen. Jika Anda admin, seluruh sistem dan data untuk lembaga Anda akan terhapus. Lanjutkan?",
+      isDanger: true,
+      onConfirm: async () => {
+        try {
+          await deleteMyAccount();
+          toast.success("Akun berhasil dihapus");
+          signOut({ callbackUrl: "/login" });
+        } catch (e: any) {
+          toast.error(e.message || "Gagal menghapus akun");
+        } finally {
+          setConfirmDialog(prev => ({ ...prev, isOpen: false }));
+        }
       }
-    }
+    });
   };
 
   return (
@@ -115,6 +147,23 @@ export default function PengaturanClient({ setting }: { setting: any }) {
           </div>
         </div>
 
+        <div className="w-full h-px bg-gray-100 dark:bg-white/10"></div>
+
+        <div>
+          <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+            <AlertTriangle className="w-5 h-5 text-green-600" /> Notifikasi
+          </h3>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-white/[0.03] rounded-xl">
+              <div>
+                <Label className="text-base font-semibold">Notifikasi WhatsApp</Label>
+                <p className="text-sm text-muted-foreground mt-1">Kirim otomatis hasil hafalan ke nomor HP orang tua (memerlukan integrasi API WhatsApp Gateway).</p>
+              </div>
+              <Switch checked={formData.notifWa} onCheckedChange={(val) => setFormData({ ...formData, notifWa: val })} />
+            </div>
+          </div>
+        </div>
+
         <div className="pt-4 flex justify-end">
           <SubmitButton onClick={handleSave} isLoading={isSubmitting}>Simpan Pengaturan</SubmitButton>
         </div>
@@ -133,6 +182,16 @@ export default function PengaturanClient({ setting }: { setting: any }) {
           <Button variant="outline" className="text-destructive border-red-200 hover:bg-red-50 hover:text-red-700" onClick={handleDeleteAccount}>Hapus Akun Saya</Button>
         </div>
       </div>
+
+      <ConfirmDialog 
+        isOpen={confirmDialog.isOpen}
+        onClose={() => setConfirmDialog(prev => ({ ...prev, isOpen: false }))}
+        onConfirm={confirmDialog.onConfirm}
+        title={confirmDialog.title}
+        description={confirmDialog.description}
+        isDanger={confirmDialog.isDanger}
+        confirmText="Ya, Saya Yakin"
+      />
     </motion.div>
   );
 }

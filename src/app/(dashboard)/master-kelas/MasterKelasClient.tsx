@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Plus, Edit, Trash2, Search, ClipboardList, Users } from "lucide-react";
+import { Plus, Edit, Trash2, Search, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Input } from "@/components/ui/input";
@@ -10,9 +10,11 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { PageHeader } from "@/components/shared/PageHeader";
+import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
 import { createHalaqoh, updateHalaqoh, deleteHalaqoh } from "@/actions/halaqoh";
 import { toast } from "sonner";
 import { formatDateShort } from "@/lib/utils";
+import { useSettings } from "@/contexts/SettingsContext";
 
 interface MasterKelasClientProps {
   halaqohs: Array<{
@@ -32,7 +34,9 @@ export default function MasterKelasClient({ halaqohs, ustadzList }: MasterKelasC
   const [searchQuery, setSearchQuery] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
   const [formData, setFormData] = useState({ id: "", nama: "", ustadzId: "unassigned" });
+  const { bahasa, zonaWaktu } = useSettings();
 
   const filteredHalaqoh = halaqohs.filter(h => 
     h.nama.toLowerCase().includes(searchQuery.toLowerCase()) || 
@@ -72,14 +76,14 @@ export default function MasterKelasClient({ halaqohs, ustadzList }: MasterKelasC
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (confirm("Apakah Anda yakin ingin menghapus halaqoh ini?")) {
-      try {
-        await deleteHalaqoh(id);
-        toast.success("Halaqoh berhasil dihapus!");
-      } catch (error: any) {
-        toast.error("Gagal menghapus halaqoh");
-      }
+  const handleDelete = async () => {
+    if (!deleteId) return;
+    try {
+      await deleteHalaqoh(deleteId);
+      toast.success("Halaqoh berhasil dihapus!");
+      setDeleteId(null);
+    } catch (error: any) {
+      toast.error(error.message || "Gagal menghapus halaqoh");
     }
   };
 
@@ -142,7 +146,7 @@ export default function MasterKelasClient({ halaqohs, ustadzList }: MasterKelasC
                         <span className="text-muted-foreground italic">Belum ditentukan</span>
                       )}
                     </td>
-                    <td className="px-4 py-3 text-muted-foreground">{formatDateShort(halaqoh.createdAt.toISOString())}</td>
+                    <td className="px-4 py-3 text-muted-foreground">{formatDateShort(halaqoh.createdAt.toISOString(), bahasa, zonaWaktu)}</td>
                     <td className="px-4 py-3 text-right">
                       <div className="flex justify-end gap-2">
                         <Link href={`/manajemen-santri?halaqoh=${encodeURIComponent(halaqoh.nama)}`}>
@@ -153,7 +157,7 @@ export default function MasterKelasClient({ halaqohs, ustadzList }: MasterKelasC
                         <Button variant="outline" size="icon" onClick={() => handleOpenModal(halaqoh)}>
                           <Edit className="w-4 h-4 text-blue-600" />
                         </Button>
-                        <Button variant="outline" size="icon" onClick={() => handleDelete(halaqoh.id)}>
+                        <Button variant="outline" size="icon" onClick={() => setDeleteId(halaqoh.id)}>
                           <Trash2 className="w-4 h-4 text-red-600" />
                         </Button>
                       </div>
@@ -197,6 +201,15 @@ export default function MasterKelasClient({ halaqohs, ustadzList }: MasterKelasC
           </form>
         </DialogContent>
       </Dialog>
+
+      <ConfirmDialog 
+        isOpen={!!deleteId}
+        onClose={() => setDeleteId(null)}
+        onConfirm={handleDelete}
+        title="Hapus Halaqoh"
+        description="Apakah Anda yakin ingin menghapus halaqoh ini? Semua santri di halaqoh ini akan diubah status halaqohnya menjadi 'Umum'."
+        isDanger={true}
+      />
     </div>
   );
 }

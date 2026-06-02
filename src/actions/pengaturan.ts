@@ -28,6 +28,7 @@ export async function updateSetting(data: {
   tahunAjaran: string;
   zonaWaktu: string;
   bahasa: string;
+  notifWa: boolean;
 }) {
   const session = await checkAuth();
   const adminId = (session.user as any).adminId;

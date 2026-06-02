@@ -5,21 +5,37 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export function formatDate(dateStr: string): string {
-  const date = new Date(dateStr);
-  return new Intl.DateTimeFormat("id-ID", {
+export function formatDate(dateString: string, locale = "id", timezone = "wib") {
+  const date = new Date(dateString);
+  const timeZoneMap: Record<string, string> = {
+    wib: "Asia/Jakarta",
+    wita: "Asia/Makassar",
+    wit: "Asia/Jayapura",
+  };
+  const resolvedTimeZone = timeZoneMap[timezone] || "Asia/Jakarta";
+  
+  return new Intl.DateTimeFormat(locale === "ar" ? "ar-EG" : locale === "en" ? "en-US" : "id-ID", {
     day: "numeric",
     month: "long",
     year: "numeric",
+    timeZone: resolvedTimeZone,
   }).format(date);
 }
 
-export function formatDateShort(dateStr: string): string {
-  const date = new Date(dateStr);
-  return new Intl.DateTimeFormat("id-ID", {
+export function formatDateShort(dateString: string, locale = "id", timezone = "wib") {
+  const date = new Date(dateString);
+  const timeZoneMap: Record<string, string> = {
+    wib: "Asia/Jakarta",
+    wita: "Asia/Makassar",
+    wit: "Asia/Jayapura",
+  };
+  const resolvedTimeZone = timeZoneMap[timezone] || "Asia/Jakarta";
+
+  return new Intl.DateTimeFormat(locale === "ar" ? "ar-EG" : locale === "en" ? "en-US" : "id-ID", {
     day: "numeric",
     month: "short",
     year: "numeric",
+    timeZone: resolvedTimeZone,
   }).format(date);
 }
 
