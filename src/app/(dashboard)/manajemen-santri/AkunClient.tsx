@@ -110,7 +110,6 @@ export default function AkunClient({ akuns, title, subtitle, defaultRole, halaqo
               <tr>
                 <th className="px-4 py-3 rounded-tl-xl">Nama Lengkap</th>
                 <th className="px-4 py-3">Email / Username</th>
-                <th className="px-4 py-3">Peran (Role)</th>
                 <th className="px-4 py-3">Tanggal Dibuat</th>
                 <th className="px-4 py-3 rounded-tr-xl text-right">Aksi</th>
               </tr>
@@ -118,7 +117,7 @@ export default function AkunClient({ akuns, title, subtitle, defaultRole, halaqo
             <tbody className="divide-y divide-gray-100 dark:divide-white/10">
               {filteredAkun.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-4 py-8 text-center text-muted-foreground">
+                  <td colSpan={4} className="px-4 py-8 text-center text-muted-foreground">
                     Belum ada data akun.
                   </td>
                 </tr>
@@ -131,15 +130,6 @@ export default function AkunClient({ akuns, title, subtitle, defaultRole, halaqo
                   >
                     <td className="px-4 py-3 font-medium text-dark">{akun.nama}</td>
                     <td className="px-4 py-3">{akun.email}</td>
-                    <td className="px-4 py-3">
-                      <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                        akun.role === 'admin' ? 'bg-purple-100 text-purple-700' :
-                        akun.role === 'ustadz' ? 'bg-blue-100 text-blue-700' :
-                        'bg-green-100 text-green-700'
-                      }`}>
-                        {akun.role.toUpperCase()}
-                      </span>
-                    </td>
                     <td className="px-4 py-3 text-muted-foreground">{formatDateShort(akun.createdAt.toISOString())}</td>
                     <td className="px-4 py-3 text-right">
                       <div className="flex justify-end gap-2">
