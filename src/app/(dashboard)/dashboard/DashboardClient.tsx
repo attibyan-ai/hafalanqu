@@ -123,7 +123,7 @@ export default function DashboardClient({ stats }: DashboardClientProps) {
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
               <ChartCard title="Aktivitas Input per Halaqoh">
                 <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={stats.adminChartAktivitas || []} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                  <AreaChart data={stats.hafalanChartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                     <defs>
                       <linearGradient id="colorZiyadah" x1="0" y1="0" x2="0" y2="1">
                         <stop offset="5%" stopColor="#0F7B53" stopOpacity={0.3}/>
