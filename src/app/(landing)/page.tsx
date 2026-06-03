@@ -110,7 +110,7 @@ export default function HomePage() {
             </motion.div>
 
             <motion.h1 variants={item} className="text-display-sm md:text-display-lg font-bold leading-tight text-gray-900 dark:text-gray-50 mb-6 text-balance">
-              Kelola Setoran Hafalan Qur'an dengan{" "}
+              Kelola Setoran Hafalan Qur&apos;an dengan{" "}
               <span className="text-primary">Mudah & Modern</span>
             </motion.h1>
             
@@ -311,7 +311,7 @@ export default function HomePage() {
                 <span className="font-bold text-2xl text-white">HafalanQu</span>
               </div>
               <p className="text-gray-400 max-w-sm mb-6 leading-relaxed">
-                Platform SaaS terkemuka untuk manajemen tahfidz Al-Qur'an. Membantu ustadz dan lembaga mencetak generasi Qur'ani.
+                Platform SaaS terkemuka untuk manajemen tahfidz Al-Qur&apos;an. Membantu ustadz dan lembaga mencetak generasi Qur&apos;ani.
               </p>
             </div>
             

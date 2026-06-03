@@ -50,7 +50,7 @@ export default function InputHafalanClient({ initialSantris }: { initialSantris:
   const handleNext = async () => {
     let fieldsToValidate: any[] = [];
     if (currentStep === 1) fieldsToValidate = ["santriId", "tanggal"];
-    if (currentStep === 2) fieldsToValidate = ["jenis", "surah", "ayatMulai", "ayatAkhir", "kualitas"];
+    if (currentStep === 2) fieldsToValidate = ["jenis", "surah", "ayatMulai", "ayatAkhir"];
     
     const isValid = await trigger(fieldsToValidate);
     if (isValid) {
@@ -178,7 +178,7 @@ export default function InputHafalanClient({ initialSantris }: { initialSantris:
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="ziyadah">Ziyadah (Hafalan Baru)</SelectItem>
-                        <SelectItem value="murajaah">Muraja'ah (Pengulangan)</SelectItem>
+                        <SelectItem value="murajaah">Muraja&apos;ah (Pengulangan)</SelectItem>
                       </SelectContent>
                     </Select>
                   </FormField>

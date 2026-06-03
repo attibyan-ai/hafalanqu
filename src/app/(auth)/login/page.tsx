@@ -99,7 +99,7 @@ export default function LoginPage() {
           </div>
           
           <h2 className="text-2xl font-bold text-white mb-4 leading-snug">
-            Sistem Digital Hafalan Qur'an untuk Pesantren Modern
+            Sistem Digital Hafalan Qur&apos;an untuk Pesantren Modern
           </h2>
           <p className="text-primary-100 mb-10 leading-relaxed">
             Pantau setoran, kelola absensi, dan evaluasi hafalan santri dalam satu platform.

@@ -11,7 +11,7 @@ export async function getRecentTes(limit = 10) {
 
   return await prisma.tes.findMany({
     where: { santri: santriWhere },
-    take: limit,
+    take: Math.min(Math.max(limit, 1), 100),
     orderBy: { createdAt: "desc" },
     include: {
       santri: true,

@@ -62,6 +62,7 @@ export default function DashboardClient({ stats }: DashboardClientProps) {
   const { data: session } = useSession();
   const role = session?.user?.role || "ustadz";
   const isAdmin = role === "admin";
+  const hasKualitasData = stats.kualitasChartData.some((item) => item.value > 0);
 
   const container = {
     hidden: { opacity: 0 },
@@ -79,7 +80,7 @@ export default function DashboardClient({ stats }: DashboardClientProps) {
           animate={{ opacity: 1, y: 0 }}
           className="text-3xl font-bold tracking-tight"
         >
-          Assalamu'alaikum, {session?.user?.name || "Ustadz"} 👋
+          Assalamu&apos;alaikum, {session?.user?.name || "Ustadz"} 👋
         </motion.h1>
         <motion.p 
           initial={{ opacity: 0 }}
@@ -149,28 +150,35 @@ export default function DashboardClient({ stats }: DashboardClientProps) {
 
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
               <ChartCard title="Distribusi Kualitas Global">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={stats.kualitasChartData}
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={80}
-                      outerRadius={110}
-                      paddingAngle={2}
-                      dataKey="value"
-                    >
-                      {stats.kualitasChartData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.fill} />
-                      ))}
-                    </Pie>
-                    <RechartsTooltip 
-                      formatter={(value: number) => [`${value}%`, 'Persentase']}
-                      contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 20px -4px rgba(0,0,0,0.1)' }}
-                    />
-                    <Legend verticalAlign="bottom" height={36} iconType="circle" />
-                  </PieChart>
-                </ResponsiveContainer>
+                {hasKualitasData ? (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={stats.kualitasChartData}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={80}
+                        outerRadius={110}
+                        paddingAngle={2}
+                        dataKey="value"
+                      >
+                        {stats.kualitasChartData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.fill} />
+                        ))}
+                      </Pie>
+                      <RechartsTooltip 
+                        formatter={(value: number) => [`${value}%`, 'Persentase']}
+                        contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 20px -4px rgba(0,0,0,0.1)' }}
+                      />
+                      <Legend verticalAlign="bottom" height={36} iconType="circle" />
+                    </PieChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div className="flex h-full min-h-[260px] flex-col items-center justify-center rounded-2xl border border-dashed border-gray-200 bg-gray-50/50 px-6 text-center dark:border-white/10 dark:bg-white/[0.03]">
+                    <p className="font-semibold text-gray-900 dark:text-gray-50">Belum ada data kualitas</p>
+                    <p className="mt-2 text-sm text-muted-foreground">Input hafalan santri akan menampilkan distribusi kualitas di sini.</p>
+                  </div>
+                )}
               </ChartCard>
             </motion.div>
           </>
@@ -206,28 +214,35 @@ export default function DashboardClient({ stats }: DashboardClientProps) {
 
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
           <ChartCard title="Distribusi Kualitas">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={stats.kualitasChartData}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={80}
-                  outerRadius={110}
-                  paddingAngle={2}
-                  dataKey="value"
-                >
-                  {stats.kualitasChartData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.fill} />
-                  ))}
-                </Pie>
-                <RechartsTooltip 
-                  formatter={(value: number) => [`${value}%`, 'Persentase']}
-                  contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 20px -4px rgba(0,0,0,0.1)' }}
-                />
-                <Legend verticalAlign="bottom" height={36} iconType="circle" />
-              </PieChart>
-            </ResponsiveContainer>
+            {hasKualitasData ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={stats.kualitasChartData}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={80}
+                    outerRadius={110}
+                    paddingAngle={2}
+                    dataKey="value"
+                  >
+                    {stats.kualitasChartData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.fill} />
+                    ))}
+                  </Pie>
+                  <RechartsTooltip 
+                    formatter={(value: number) => [`${value}%`, 'Persentase']}
+                    contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 20px -4px rgba(0,0,0,0.1)' }}
+                  />
+                  <Legend verticalAlign="bottom" height={36} iconType="circle" />
+                </PieChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="flex h-full min-h-[260px] flex-col items-center justify-center rounded-2xl border border-dashed border-gray-200 bg-gray-50/50 px-6 text-center dark:border-white/10 dark:bg-white/[0.03]">
+                <p className="font-semibold text-gray-900 dark:text-gray-50">Belum ada data kualitas</p>
+                <p className="mt-2 text-sm text-muted-foreground">Input hafalan santri akan menampilkan distribusi kualitas di sini.</p>
+              </div>
+            )}
           </ChartCard>
         </motion.div>
           </>

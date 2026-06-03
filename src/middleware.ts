@@ -69,8 +69,10 @@ export default withAuth(
   },
   {
     callbacks: {
-      // Hanya izinkan middleware berjalan jika user memiliki token valid
-      authorized: ({ token }) => !!token,
+      // Selalu jalankan middleware callback agar API routes bisa mengembalikan
+      // JSON 401 sendiri. Kalau false di sini, NextAuth akan redirect ke /login
+      // sebelum logic API di atas sempat berjalan.
+      authorized: () => true,
     },
     pages: {
       signIn: "/login",
