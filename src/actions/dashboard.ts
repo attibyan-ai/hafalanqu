@@ -167,16 +167,35 @@ export async function getDashboardStats() {
 
   // Admin Charts
   const totalHalaqoh = uniqueHalaqohs.length;
-  const aktivitasMap = new Map<string, { ziyadah: number, murajaah: number }>();
   const kMap = new Map<string, { mumtaz: number, jayyid: number, maqbul: number }>();
+
+  const buildAdminAktivitasChart = (items: typeof allHafalansAdmin) => {
+    const aktivitasMap = new Map<string, { ziyadah: number, murajaah: number }>();
+
+    items.forEach(h => {
+      const hq = h.santri?.halaqah || "Umum";
+      if (!aktivitasMap.has(hq)) aktivitasMap.set(hq, { ziyadah: 0, murajaah: 0 });
+      const actStat = aktivitasMap.get(hq)!;
+      if (h.jenis.toLowerCase() === "ziyadah") actStat.ziyadah += 1;
+      else actStat.murajaah += 1;
+    });
+
+    return Array.from(aktivitasMap.entries()).map(([name, stats]) => ({
+      name,
+      ziyadah: stats.ziyadah,
+      murajaah: stats.murajaah
+    }));
+  };
+
+  const adminChartAktivitas = buildAdminAktivitasChart(
+    allHafalansAdmin.filter(h => h.tanggal >= startOfWeek && h.tanggal <= endOfWeek)
+  );
+  const adminChartAktivitasBulanan = buildAdminAktivitasChart(
+    allHafalansAdmin.filter(h => h.tanggal >= startOfThisMonth)
+  );
 
   allHafalansAdmin.forEach(h => {
     const hq = h.santri?.halaqah || "Umum";
-    
-    if (!aktivitasMap.has(hq)) aktivitasMap.set(hq, { ziyadah: 0, murajaah: 0 });
-    const actStat = aktivitasMap.get(hq)!;
-    if (h.jenis.toLowerCase() === "ziyadah") actStat.ziyadah += 1;
-    else actStat.murajaah += 1;
     
     if (!kMap.has(hq)) kMap.set(hq, { mumtaz: 0, jayyid: 0, maqbul: 0 });
     const stat = kMap.get(hq)!;
@@ -186,11 +205,6 @@ export async function getDashboardStats() {
     else stat.maqbul += 1;
   });
 
-  const adminChartAktivitas = Array.from(aktivitasMap.entries()).map(([name, stats]) => ({ 
-    name, 
-    ziyadah: stats.ziyadah, 
-    murajaah: stats.murajaah 
-  }));
   const adminChartKualitas = Array.from(kMap.entries()).map(([name, stats]) => ({
     name,
     "Mumtaz": stats.mumtaz,
@@ -252,6 +266,7 @@ export async function getDashboardStats() {
     totalGuru,
     totalHalaqoh,
     adminChartAktivitas,
+    adminChartAktivitasBulanan,
     adminChartKualitas,
     adminRecentActivities,
     adminTopHalaqoh,

@@ -1,11 +1,13 @@
 "use client";
 
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { Users, BookOpen, BarChart3, CalendarCheck, ClipboardList, UserCog } from "lucide-react";
 import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from "recharts";
 import { StatCard, ChartCard } from "@/components/shared";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { getInitials, formatDateShort } from "@/lib/utils";
 import { useSession } from "next-auth/react";
 
@@ -39,6 +41,7 @@ interface DashboardClientProps {
     totalGuru?: number;
     totalHalaqoh?: number;
     adminChartAktivitas?: Array<any>;
+    adminChartAktivitasBulanan?: Array<any>;
     adminChartKualitas?: Array<any>;
     adminRecentActivities?: Array<{
       id: string;
@@ -60,9 +63,14 @@ interface DashboardClientProps {
 
 export default function DashboardClient({ stats }: DashboardClientProps) {
   const { data: session } = useSession();
+  const [adminTrendPeriod, setAdminTrendPeriod] = useState<"weekly" | "monthly">("weekly");
   const role = session?.user?.role || "ustadz";
   const isAdmin = role === "admin";
   const hasKualitasData = stats.kualitasChartData.some((item) => item.value > 0);
+  const adminTrendTitle = adminTrendPeriod === "weekly" ? "Tren Mingguan" : "Tren Bulanan";
+  const adminTrendData = adminTrendPeriod === "weekly"
+    ? (stats.adminChartAktivitas || [])
+    : (stats.adminChartAktivitasBulanan || []);
 
   const container = {
     hidden: { opacity: 0 },
@@ -121,9 +129,22 @@ export default function DashboardClient({ stats }: DashboardClientProps) {
         {isAdmin ? (
           <>
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
-              <ChartCard title="Aktivitas Input per Halaqoh">
+              <ChartCard
+                title={adminTrendTitle}
+                headerAction={
+                  <Select value={adminTrendPeriod} onValueChange={(value: "weekly" | "monthly") => setAdminTrendPeriod(value)}>
+                    <SelectTrigger className="w-[130px] h-9">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="weekly">Mingguan</SelectItem>
+                      <SelectItem value="monthly">Bulanan</SelectItem>
+                    </SelectContent>
+                  </Select>
+                }
+              >
                 <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={stats.hafalanChartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                  <AreaChart data={adminTrendData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                     <defs>
                       <linearGradient id="colorZiyadah" x1="0" y1="0" x2="0" y2="1">
                         <stop offset="5%" stopColor="#0F7B53" stopOpacity={0.3}/>
