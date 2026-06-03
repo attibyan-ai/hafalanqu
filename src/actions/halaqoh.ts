@@ -3,9 +3,12 @@
 import { prisma } from "@/lib/prisma";
 import { checkAuth } from "@/lib/checkAuth";
 import { revalidatePath } from "next/cache";
+import { requireAdmin } from "@/lib/access-control";
 
 export async function getHalaqoh() {
   const session = await checkAuth();
+  requireAdmin(session);
+
   const adminId = (session.user as any).adminId;
 
   return await prisma.halaqah.findMany({
@@ -19,6 +22,8 @@ export async function getHalaqoh() {
 
 export async function getHalaqohById(id: string) {
   const session = await checkAuth();
+  requireAdmin(session);
+
   const adminId = (session.user as any).adminId;
 
   const halaqoh = await prisma.halaqah.findFirst({
@@ -34,6 +39,8 @@ export async function getHalaqohById(id: string) {
 
 export async function createHalaqoh(data: { nama: string; ustadzId?: string }) {
   const session = await checkAuth();
+  requireAdmin(session);
+
   const adminId = (session.user as any).adminId;
 
   const existing = await prisma.halaqah.findFirst({ where: { nama: data.nama, adminId } });
@@ -54,6 +61,8 @@ export async function createHalaqoh(data: { nama: string; ustadzId?: string }) {
 
 export async function updateHalaqoh(id: string, data: { nama: string; ustadzId?: string }) {
   const session = await checkAuth();
+  requireAdmin(session);
+
   const adminId = (session.user as any).adminId;
 
   const existing = await prisma.halaqah.findFirst({ where: { id, adminId } });
@@ -81,6 +90,8 @@ export async function updateHalaqoh(id: string, data: { nama: string; ustadzId?:
 
 export async function deleteHalaqoh(id: string) {
   const session = await checkAuth();
+  requireAdmin(session);
+
   const adminId = (session.user as any).adminId;
 
   const existing = await prisma.halaqah.findFirst({ where: { id, adminId } });

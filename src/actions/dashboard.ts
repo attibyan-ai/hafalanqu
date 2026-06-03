@@ -2,10 +2,13 @@
 
 import { prisma } from "@/lib/prisma";
 import { checkAuth } from "@/lib/checkAuth";
+import { getSantriAccessWhere, getSessionRole } from "@/lib/access-control";
 
 export async function getDashboardStats() {
   const session = await checkAuth();
   const adminId = (session.user as any).adminId;
+  const role = getSessionRole(session);
+  const santriWhere = await getSantriAccessWhere(session);
 
   const now = new Date();
   const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
@@ -37,30 +40,30 @@ export async function getDashboardStats() {
     kehadiranThisMonth,
     kehadiranLastMonth,
   ] = await Promise.all([
-    prisma.santri.count({ where: { status: "active", adminId } }),
-    prisma.hafalan.count({ where: { createdAt: { gte: today }, santri: { adminId } } }),
-    prisma.hafalan.findMany({ where: { createdAt: { gte: startOfLastMonth }, santri: { adminId } } }),
-    prisma.kehadiran.findMany({ where: { tanggal: { gte: today }, santri: { adminId } } }),
-    prisma.hafalan.findMany({ where: { createdAt: { gte: today }, santri: { adminId } }, include: { santri: { select: { halaqah: true } } } }),
+    prisma.santri.count({ where: { status: "active", ...santriWhere } }),
+    prisma.hafalan.count({ where: { createdAt: { gte: today }, santri: santriWhere } }),
+    prisma.hafalan.findMany({ where: { createdAt: { gte: startOfLastMonth }, santri: santriWhere } }),
+    prisma.kehadiran.findMany({ where: { tanggal: { gte: today }, santri: santriWhere } }),
+    prisma.hafalan.findMany({ where: { createdAt: { gte: today }, santri: santriWhere }, include: { santri: { select: { halaqah: true } } } }),
     prisma.hafalan.findMany({
-      where: { santri: { adminId } },
+      where: { santri: santriWhere },
       take: 5,
       orderBy: { createdAt: "desc" },
       include: { santri: true },
     }),
     prisma.santri.findMany({
-      where: { status: "active", adminId },
+      where: { status: "active", ...santriWhere },
       include: { hafalans: true },
     }),
-    prisma.santri.count({ where: { createdAt: { gte: startOfThisMonth }, adminId } }),
-    prisma.santri.count({ where: { createdAt: { gte: startOfLastMonth, lt: startOfThisMonth }, adminId } }),
-    prisma.hafalan.count({ where: { createdAt: { gte: startOfThisMonth }, santri: { adminId } } }),
-    prisma.hafalan.count({ where: { createdAt: { gte: startOfLastMonth, lt: startOfThisMonth }, santri: { adminId } } }),
-    prisma.user.count({ where: { role: "ustadz", adminId } }),
-    prisma.santri.findMany({ where: { status: "active", adminId }, select: { halaqah: true }, distinct: ['halaqah'] }),
-    prisma.hafalan.findMany({ where: { santri: { adminId } }, include: { santri: { select: { halaqah: true } } } }),
-    prisma.kehadiran.count({ where: { tanggal: { gte: startOfThisMonth }, status: "hadir", santri: { adminId } } }),
-    prisma.kehadiran.count({ where: { tanggal: { gte: startOfLastMonth, lt: startOfThisMonth }, status: "hadir", santri: { adminId } } }),
+    prisma.santri.count({ where: { createdAt: { gte: startOfThisMonth }, ...santriWhere } }),
+    prisma.santri.count({ where: { createdAt: { gte: startOfLastMonth, lt: startOfThisMonth }, ...santriWhere } }),
+    prisma.hafalan.count({ where: { createdAt: { gte: startOfThisMonth }, santri: santriWhere } }),
+    prisma.hafalan.count({ where: { createdAt: { gte: startOfLastMonth, lt: startOfThisMonth }, santri: santriWhere } }),
+    role === "admin" ? prisma.user.count({ where: { role: "ustadz", adminId } }) : Promise.resolve(0),
+    prisma.santri.findMany({ where: { status: "active", ...santriWhere }, select: { halaqah: true }, distinct: ['halaqah'] }),
+    prisma.hafalan.findMany({ where: { santri: santriWhere }, include: { santri: { select: { halaqah: true } } } }),
+    prisma.kehadiran.count({ where: { tanggal: { gte: startOfThisMonth }, status: "hadir", santri: santriWhere } }),
+    prisma.kehadiran.count({ where: { tanggal: { gte: startOfLastMonth, lt: startOfThisMonth }, status: "hadir", santri: santriWhere } }),
   ]);
 
   // Rata-rata kualitas

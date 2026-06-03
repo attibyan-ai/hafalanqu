@@ -3,14 +3,15 @@
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { checkAuth } from "@/lib/checkAuth";
+import { getSantriAccessWhere, requireAdmin } from "@/lib/access-control";
 import { z } from "zod";
 
 export async function getSantris() {
   const session = await checkAuth();
-  const adminId = (session.user as any).adminId;
+  const santriWhere = await getSantriAccessWhere(session);
 
   const santris = await prisma.santri.findMany({
-    where: { adminId },
+    where: santriWhere,
     orderBy: { createdAt: "desc" },
     include: {
       _count: { select: { hafalans: true } },
@@ -45,10 +46,10 @@ export async function getSantris() {
 
 export async function getSantrisByHalaqoh(halaqohName: string) {
   const session = await checkAuth();
-  const adminId = (session.user as any).adminId;
+  const santriWhere = await getSantriAccessWhere(session);
 
   const santris = await prisma.santri.findMany({
-    where: { adminId, halaqah: halaqohName },
+    where: { ...santriWhere, halaqah: halaqohName },
     orderBy: { createdAt: "desc" },
     include: {
       _count: { select: { hafalans: true } },
@@ -89,6 +90,8 @@ const santriSchema = z.object({
 
 export async function createSantri(data: { nama: string; halaqah: string; targetJuz: number }) {
   const session = await checkAuth();
+  requireAdmin(session);
+
   const adminId = (session.user as any).adminId;
 
   const parsed = santriSchema.parse(data);
@@ -110,6 +113,8 @@ const updateSantriSchema = z.object({
 
 export async function updateSantri(id: string, data: { nama?: string; halaqah?: string; targetJuz?: number; status?: string }) {
   const session = await checkAuth();
+  requireAdmin(session);
+
   const adminId = (session.user as any).adminId;
 
   const parsed = updateSantriSchema.parse(data);
@@ -122,6 +127,8 @@ export async function updateSantri(id: string, data: { nama?: string; halaqah?: 
 
 export async function deleteSantri(id: string) {
   const session = await checkAuth();
+  requireAdmin(session);
+
   const adminId = (session.user as any).adminId;
 
   await prisma.santri.delete({

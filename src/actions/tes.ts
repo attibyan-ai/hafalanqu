@@ -3,13 +3,14 @@
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { checkAuth } from "@/lib/checkAuth";
+import { getSantriAccessWhere } from "@/lib/access-control";
 
 export async function getRecentTes(limit = 10) {
   const session = await checkAuth();
-  const adminId = (session.user as any).adminId;
+  const santriWhere = await getSantriAccessWhere(session);
 
   return await prisma.tes.findMany({
-    where: { santri: { adminId } },
+    where: { santri: santriWhere },
     take: limit,
     orderBy: { createdAt: "desc" },
     include: {
@@ -20,10 +21,12 @@ export async function getRecentTes(limit = 10) {
 
 export async function saveHasilTes(santriId: string, jenis: string, nilai: number, target: string) {
   const session = await checkAuth();
-  const adminId = (session.user as any).adminId;
+  const santriWhere = await getSantriAccessWhere(session);
 
-  const santri = await prisma.santri.findUnique({ where: { id: santriId } });
-  if (!santri || santri.adminId !== adminId) throw new Error("Unauthorized santri");
+  const santri = await prisma.santri.findFirst({
+    where: { id: santriId, ...santriWhere },
+  });
+  if (!santri) throw new Error("Unauthorized santri");
 
   const tes = await prisma.tes.create({
     data: {

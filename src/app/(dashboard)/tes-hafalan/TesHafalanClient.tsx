@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ArrowRight, ArrowLeft, HelpCircle, ChevronRight } from "lucide-react";
 import { formatDateShort } from "@/lib/utils";
+import { surahList } from "@/constants/surah";
 
 const testTypes = [
   {
@@ -229,8 +230,8 @@ export default function TesHafalanClient({ initialData, santris }: { initialData
                     ? Array.from({length: 30}, (_, i) => i + 1).map(j => (
                         <SelectItem key={j} value={j.toString()}>Juz {j}</SelectItem>
                       ))
-                    : Array.from({length: 114}, (_, i) => i + 1).map(s => (
-                        <SelectItem key={s} value={s.toString()}>Surah Ke-{s}</SelectItem>
+                    : surahList.map((surah, index) => (
+                        <SelectItem key={surah} value={(index + 1).toString()}>{surah}</SelectItem>
                       ))
                   }
                 </SelectContent>

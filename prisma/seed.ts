@@ -4,7 +4,11 @@ import bcrypt from 'bcryptjs'
 const prisma = new PrismaClient()
 
 async function main() {
-  const adminPassword = process.env.ADMIN_PASSWORD || 'admin123';
+  const adminPassword = process.env.ADMIN_PASSWORD;
+  if (!adminPassword || adminPassword.length < 8) {
+    throw new Error('ADMIN_PASSWORD minimal 8 karakter wajib diset sebelum menjalankan seed.');
+  }
+
   const password = await bcrypt.hash(adminPassword, 10)
 
   const admin = await prisma.user.upsert({
@@ -18,7 +22,7 @@ async function main() {
     },
   })
 
-  console.log({ admin })
+  console.log(`Admin seed ready: ${admin.email}`)
 }
 
 main()

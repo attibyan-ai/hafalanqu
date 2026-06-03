@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import { checkAuth } from "@/lib/checkAuth";
 import { revalidatePath } from "next/cache";
+import { requireAdmin } from "@/lib/access-control";
 
 export async function getSetting() {
   const session = await checkAuth();
@@ -30,10 +31,9 @@ export async function updateSetting(data: {
   bahasa: string;
 }) {
   const session = await checkAuth();
-  const adminId = (session.user as any).adminId;
+  requireAdmin(session);
 
-  // Only admin can update global settings? Wait, the UI didn't restrict it previously, but standard practice is yes.
-  // We'll let anyone under the adminId update it for now to match the user's "fungsikan semuanya" request.
+  const adminId = (session.user as any).adminId;
   
   await prisma.setting.upsert({
     where: { adminId },
@@ -49,12 +49,9 @@ export async function updateSetting(data: {
 
 export async function resetAllData() {
   const session = await checkAuth();
-  const adminId = (session.user as any).adminId;
-  const role = (session.user as any).role;
+  requireAdmin(session);
 
-  if (role !== "admin") {
-    throw new Error("Hanya admin yang dapat mengosongkan data");
-  }
+  const adminId = (session.user as any).adminId;
 
   // Delete all hafalans, tes, kehadirans, santris, halaqohs under this adminId
   await prisma.hafalan.deleteMany({ where: { santri: { adminId } } });

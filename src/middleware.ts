@@ -4,11 +4,10 @@ import { NextResponse } from "next/server";
 // Peta rute aman dan role yang diizinkan mengaksesnya
 const routeAccessRules = [
   // ================= ADMIN PAGES =================
-  { prefix: "/manajemen-pengguna", allowedRoles: ["admin"] },
+  { prefix: "/manajemen-ustadz", allowedRoles: ["admin"] },
+  { prefix: "/manajemen-santri", allowedRoles: ["admin"] },
   { prefix: "/master-kelas", allowedRoles: ["admin"] },
-  { prefix: "/master-surat", allowedRoles: ["admin"] },
   { prefix: "/laporan-global", allowedRoles: ["admin"] },
-  { prefix: "/pengaturan-sistem", allowedRoles: ["admin"] },
 
   // ================= USTADZ PAGES =================
   { prefix: "/input-hafalan", allowedRoles: ["ustadz"] },
@@ -17,7 +16,6 @@ const routeAccessRules = [
   { prefix: "/riwayat-hafalan", allowedRoles: ["ustadz", "admin"] },
   { prefix: "/daftar-hadir", allowedRoles: ["ustadz", "admin"] },
   { prefix: "/tes-hafalan", allowedRoles: ["ustadz", "admin", "santri"] },
-  { prefix: "/manajemen-santri", allowedRoles: ["ustadz", "admin"] },
 
   // ================= SANTRI PAGES =================
   { prefix: "/target-hafalan", allowedRoles: ["santri"] },

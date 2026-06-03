@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import { checkAuth } from "@/lib/checkAuth";
 import { revalidatePath } from "next/cache";
+import { assertManagedAccountRole, requireAdmin } from "@/lib/access-control";
 
 // Kita gunakan bcryptjs atau hashing sejenis, tapi karena project ini minimal,
 // dan sebelumnya create-admin memakai bcryptjs, kita cek apakah ada.
@@ -10,6 +11,9 @@ import bcrypt from "bcryptjs";
 
 export async function getAkunByRole(role: string) {
   const session = await checkAuth();
+  requireAdmin(session);
+  assertManagedAccountRole(role);
+
   const adminId = (session.user as any).adminId;
 
   return await prisma.user.findMany({
@@ -28,16 +32,10 @@ export async function getAkunByRole(role: string) {
 
 export async function createAkun(data: { nama: string; email: string; password?: string; role: string; halaqah?: string }) {
   const session = await checkAuth();
-  const adminId = (session.user as any).adminId;
-  const currentRole = (session.user as any).role;
+  requireAdmin(session);
+  assertManagedAccountRole(data.role);
 
-  // Guard: hanya admin yang bisa buat akun, dan tidak bisa buat admin baru
-  if (currentRole !== "admin") {
-    throw new Error("Hanya admin yang dapat membuat akun");
-  }
-  if (data.role === "admin") {
-    throw new Error("Tidak dapat membuat akun admin baru");
-  }
+  const adminId = (session.user as any).adminId;
 
   const existing = await prisma.user.findUnique({ where: { email: data.email } });
   if (existing) {
@@ -76,16 +74,10 @@ export async function createAkun(data: { nama: string; email: string; password?:
 
 export async function updateAkun(id: string, data: { nama: string; email: string; password?: string; role: string; halaqah?: string }) {
   const session = await checkAuth();
-  const adminId = (session.user as any).adminId;
-  const currentRole = (session.user as any).role;
+  requireAdmin(session);
+  assertManagedAccountRole(data.role);
 
-  // Guard: hanya admin yang bisa edit akun, dan tidak bisa promote ke admin
-  if (currentRole !== "admin") {
-    throw new Error("Hanya admin yang dapat mengubah akun");
-  }
-  if (data.role === "admin") {
-    throw new Error("Tidak dapat mengubah akun menjadi admin");
-  }
+  const adminId = (session.user as any).adminId;
 
   // Verifikasi kepemilikan
   const existing = await prisma.user.findFirst({ where: { id, adminId } });
@@ -125,6 +117,8 @@ export async function updateAkun(id: string, data: { nama: string; email: string
 
 export async function deleteAkun(id: string) {
   const session = await checkAuth();
+  requireAdmin(session);
+
   const adminId = (session.user as any).adminId;
 
   const existing = await prisma.user.findFirst({ where: { id, adminId } });

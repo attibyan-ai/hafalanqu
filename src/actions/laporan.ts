@@ -2,6 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { checkAuth } from "@/lib/checkAuth";
+import { requireAdmin } from "@/lib/access-control";
 
 export type LaporanItem = {
   id: string;
@@ -16,6 +17,8 @@ export type LaporanItem = {
 
 export async function getLaporanGlobal(): Promise<LaporanItem[]> {
   const session = await checkAuth();
+  requireAdmin(session);
+
   const adminId = (session.user as any).adminId;
 
   // We need to fetch all activities for Santri belonging to this admin

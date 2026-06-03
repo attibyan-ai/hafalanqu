@@ -3,9 +3,12 @@
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { checkAuth } from "@/lib/checkAuth";
+import { requireRole } from "@/lib/access-control";
 
 export async function getKehadirans(limit = 500) {
   const session = await checkAuth();
+  requireRole(session, ["admin", "ustadz"]);
+
   const adminId = (session.user as any).adminId;
 
   return await prisma.kehadiran.findMany({
@@ -20,6 +23,8 @@ export async function getKehadirans(limit = 500) {
 
 export async function setKehadiran(santriId: string, tanggalStr: string, status: string) {
   const session = await checkAuth();
+  requireRole(session, ["admin", "ustadz"]);
+
   const adminId = (session.user as any).adminId;
 
   const santri = await prisma.santri.findUnique({ where: { id: santriId } });
@@ -59,6 +64,8 @@ export async function setKehadiran(santriId: string, tanggalStr: string, status:
 
 export async function deleteKehadiran(santriId: string, tanggalStr: string) {
   const session = await checkAuth();
+  requireRole(session, ["admin", "ustadz"]);
+
   const adminId = (session.user as any).adminId;
 
   const santri = await prisma.santri.findUnique({ where: { id: santriId } });

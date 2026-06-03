@@ -4,12 +4,10 @@ import { useState, useEffect, useMemo, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
-import { ArrowLeft, CheckCircle2, XCircle, Loader2, Trophy, ArrowRight } from "lucide-react";
+import { CheckCircle2, XCircle, Loader2, Trophy, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { FormField } from "@/components/shared";
 import { saveHasilTes } from "@/actions/tes";
-import { surahList } from "@/constants/surah";
+import { surahQuizOptions } from "@/constants/surah";
 
 type Question = {
   id: number;
@@ -32,8 +30,8 @@ export default function QuizClient({ santris }: { santris: any[] }) {
   
   const [questions, setQuestions] = useState<Question[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [score, setScore] = useState(0);
   const scoreRef = useRef(0);
+  const correctCountRef = useRef(0);
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
   const [isAnswerChecked, setIsAnswerChecked] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -55,6 +53,11 @@ export default function QuizClient({ santris }: { santris: any[] }) {
         return;
       }
       if (isMounted) setMode("loading");
+      setCurrentIndex(0);
+      setSelectedAnswer(null);
+      setIsAnswerChecked(false);
+      correctCountRef.current = 0;
+      scoreRef.current = 0;
 
       try {
         const endpoint = targetType === "juz" 
@@ -149,18 +152,17 @@ export default function QuizClient({ santris }: { santris: any[] }) {
             usedIndices.add(r);
 
             const qAyah = ayahs[r];
-            const correctSurah = qAyah.surah.name;
+            const correctSurah = qAyah.surah.englishName || qAyah.surah.name;
 
             const options = [correctSurah];
-            // Ambil wrong options dari daftar 114 surah, bukan dari range target
-            for (const s of surahList) {
+            for (const s of surahQuizOptions) {
               if (options.length >= 4) break;
               if (!options.includes(s)) options.push(s);
             }
-            // Kalo surahList gak cukup, tambah dari api response sebagai fallback
             let optAttempts = 0;
             while(options.length < 4 && optAttempts < 50) {
-              const wrong = ayahs[Math.floor(Math.random() * ayahs.length)].surah.name;
+              const randomSurah = ayahs[Math.floor(Math.random() * ayahs.length)].surah;
+              const wrong = randomSurah.englishName || randomSurah.name;
               if (!options.includes(wrong)) options.push(wrong);
               optAttempts++;
             }
@@ -203,9 +205,8 @@ export default function QuizClient({ santris }: { santris: any[] }) {
     setIsAnswerChecked(true);
 
     if (opt === questions[currentIndex].correctAnswer) {
-      const newScore = scoreRef.current + 20;
-      scoreRef.current = newScore;
-      setScore(newScore); // 5 questions = 20 pts each
+      correctCountRef.current += 1;
+      scoreRef.current = Math.round((correctCountRef.current / questions.length) * 100);
     }
   };
 
@@ -256,7 +257,9 @@ export default function QuizClient({ santris }: { santris: any[] }) {
             <div className={`text-6xl font-extrabold ${scoreRef.current >= 70 ? 'text-emerald-500' : 'text-amber-500'}`}>
               {scoreRef.current}
             </div>
-            <div className="text-sm text-muted-foreground mt-2">Dari 100 poin (5 Soal)</div>
+            <div className="text-sm text-muted-foreground mt-2">
+              {correctCountRef.current} dari {questions.length} jawaban benar
+            </div>
           </div>
           
           <Button className="w-full h-12" onClick={() => router.push("/tes-hafalan")} disabled={isSaving}>
@@ -269,14 +272,12 @@ export default function QuizClient({ santris }: { santris: any[] }) {
   }
 
   const currentQ = questions[currentIndex];
-  const isCorrect = selectedAnswer === currentQ.correctAnswer;
-
   return (
     <div className="max-w-3xl mx-auto mt-6">
       <div className="flex items-center justify-between mb-8">
         <h2 className="text-xl font-bold text-dark">{jenisLabel}</h2>
         <div className="bg-white px-4 py-2 rounded-full font-bold text-primary shadow-sm text-sm">
-          Soal {currentIndex + 1} / 5
+          Soal {currentIndex + 1} / {questions.length}
         </div>
       </div>
 
