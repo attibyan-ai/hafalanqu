@@ -125,11 +125,11 @@ export default function DashboardClient({ stats }: DashboardClientProps) {
                 <ResponsiveContainer width="100%" height="100%">
                   <AreaChart data={stats.adminChartAktivitas || []} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                     <defs>
-                      <linearGradient id="colorAdminZiyadah" x1="0" y1="0" x2="0" y2="1">
+                      <linearGradient id="colorZiyadah" x1="0" y1="0" x2="0" y2="1">
                         <stop offset="5%" stopColor="#0F7B53" stopOpacity={0.3}/>
                         <stop offset="95%" stopColor="#0F7B53" stopOpacity={0}/>
                       </linearGradient>
-                      <linearGradient id="colorAdminMurajaah" x1="0" y1="0" x2="0" y2="1">
+                      <linearGradient id="colorMurajaah" x1="0" y1="0" x2="0" y2="1">
                         <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.3}/>
                         <stop offset="95%" stopColor="#3B82F6" stopOpacity={0}/>
                       </linearGradient>
@@ -141,8 +141,8 @@ export default function DashboardClient({ stats }: DashboardClientProps) {
                       contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 20px -4px rgba(0,0,0,0.1)' }}
                       labelStyle={{ fontWeight: 'bold', color: '#111827', marginBottom: '8px' }}
                     />
-                    <Area type="monotone" dataKey="ziyadah" name="Ziyadah" stroke="#0F7B53" strokeWidth={3} fillOpacity={1} fill="url(#colorAdminZiyadah)" />
-                    <Area type="monotone" dataKey="murajaah" name="Muraja'ah" stroke="#3B82F6" strokeWidth={3} fillOpacity={1} fill="url(#colorAdminMurajaah)" />
+                    <Area type="monotone" dataKey="ziyadah" stroke="#0F7B53" strokeWidth={3} fillOpacity={1} fill="url(#colorZiyadah)" />
+                    <Area type="monotone" dataKey="murajaah" stroke="#3B82F6" strokeWidth={3} fillOpacity={1} fill="url(#colorMurajaah)" />
                   </AreaChart>
                 </ResponsiveContainer>
               </ChartCard>
